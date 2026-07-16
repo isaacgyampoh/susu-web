@@ -19,7 +19,7 @@ export default function Home() {
           <img src="/cover.jpg" alt="" fetchPriority="high"
             className="absolute inset-0 w-full h-full object-cover" />
         </picture>
-        <div className="absolute inset-0 bg-gradient-to-b from-ink/60 via-ink/75 to-ink" />
+        <div className="absolute inset-0 bg-gradient-to-b from-ink/20 via-ink/45 to-ink/75" />
 
         <div className="wrap relative py-24 sm:py-32">
           <p className="text-[13px] font-medium text-white/50 mb-6">Rotating savings · Ghana</p>
