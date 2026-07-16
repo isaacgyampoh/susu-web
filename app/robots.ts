@@ -8,6 +8,6 @@ export default function robots(): MetadataRoute.Robots {
       // Application pages are per-group and transient — no value in the index
       disallow: ['/join/'],
     },
-    sitemap: 'https://susu-web.vercel.app/sitemap.xml',
+    sitemap: 'https://abbiewealthsusu.com/sitemap.xml',
   }
 }

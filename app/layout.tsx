@@ -4,23 +4,23 @@ import './globals.css'
 import Nav from '@/components/nav'
 import Footer from '@/components/footer'
 
-const url = 'https://susu-web.vercel.app'
+const url = 'https://abbiewealthsusu.com'
 
 export const metadata: Metadata = {
   metadataBase: new URL(url),
   title: {
-    default: 'Susu — Save daily, collect on your day',
-    template: '%s · Susu',
+    default: 'Abbie Wealth Susu — Save daily, collect on your day',
+    template: '%s · Abbie Wealth Susu',
   },
   description:
-    'A trusted rotating savings group in Ghana. Contribute daily, collect the whole pot on your assigned day. Every payment recorded, every date known in advance.',
+    'Abbie Wealth Susu — a trusted rotating savings group in Ghana. Contribute daily, collect the whole pot on your assigned day. Every payment recorded, every date known in advance.',
   keywords: ['susu', 'rotating savings', 'Ghana', 'daily contribution', 'community savings', 'esusu'],
   openGraph: {
-    type: 'website', locale: 'en_GH', url, siteName: 'Susu',
-    title: 'Susu — Save daily, collect on your day',
+    type: 'website', locale: 'en_GH', url, siteName: 'Abbie Wealth Susu',
+    title: 'Abbie Wealth Susu — Save daily, collect on your day',
     description: 'Contribute daily, collect the whole pot on your assigned day. Run on a proper ledger.',
   },
-  twitter: { card: 'summary_large_image', title: 'Susu — Save daily, collect on your day' },
+  twitter: { card: 'summary_large_image', title: 'Abbie Wealth Susu — Save daily, collect on your day' },
   robots: { index: true, follow: true },
 }
 

@@ -35,8 +35,8 @@ export default function Nav() {
         </nav>
 
         <div className="hidden md:flex items-center gap-2">
-          <a href={SITE.consoleUrl} className="text-[14px] font-medium text-ink-2 hover:text-ink transition-colors mr-3">
-            Sign in
+          <a href={SITE.memberUrl} className="text-[14px] font-medium text-ink-2 hover:text-ink transition-colors mr-3">
+            Member sign in
           </a>
           <Link href="/plans" className="btn-dark btn-sm">Join a group</Link>
         </div>
@@ -57,7 +57,7 @@ export default function Nav() {
             {LINKS.map(({ href, label }) => (
               <Link key={href} href={href} className="py-3 text-[15px] font-medium">{label}</Link>
             ))}
-            <a href={SITE.consoleUrl} className="py-3 text-[15px] font-medium text-ink-2">Sign in</a>
+            <a href={SITE.memberUrl} className="py-3 text-[15px] font-medium text-ink-2">Member sign in</a>
             <Link href="/plans" className="btn-dark mt-3">Join a group</Link>
           </div>
         </div>

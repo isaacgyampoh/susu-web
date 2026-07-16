@@ -13,7 +13,7 @@ export default function Footer() {
 
           <div className="flex gap-12 sm:gap-16">
             <div>
-              <p className="t-label mb-3">Susu</p>
+              <p className="t-label mb-3">{SITE.name}</p>
               <div className="flex flex-col gap-2.5">
                 <Link href="/#how"  className="text-[14px] text-ink-2 hover:text-ink transition-colors">How it works</Link>
                 <Link href="/plans" className="text-[14px] text-ink-2 hover:text-ink transition-colors">Open groups</Link>
@@ -25,6 +25,7 @@ export default function Footer() {
               <div className="flex flex-col gap-2.5">
                 <a href={`https://wa.me/${SITE.whatsapp}`} className="text-[14px] text-ink-2 hover:text-ink transition-colors">WhatsApp</a>
                 <a href={`mailto:${SITE.email}`} className="text-[14px] text-ink-2 hover:text-ink transition-colors">Email</a>
+                <a href={SITE.memberUrl} className="text-[14px] text-ink-2 hover:text-ink transition-colors">Member sign in</a>
                 <a href={SITE.consoleUrl} className="text-[14px] text-ink-2 hover:text-ink transition-colors">Admin sign in</a>
               </div>
             </div>

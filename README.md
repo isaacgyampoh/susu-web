@@ -1,4 +1,4 @@
-# Susu — public website
+# Abbie Wealth Susu — public website
 
 The front door. Explains how a susu works, lists open groups, and takes
 applications. Applications land in the admin console's **Applications** queue.
@@ -17,13 +17,26 @@ Functions: `groups-public` and `kyc-submit`.
 | `/join/[groupId]` | Application + Ghana Card + registration fee |
 | `/rules` | Full rules and regulations |
 
+## Domains
+
+| Host | Serves | Repo |
+|---|---|---|
+| `abbiewealthsusu.com` | this site | `susu-web` |
+| `admin.abbiewealthsusu.com` | administrator console | `susu` |
+| `my.abbiewealthsusu.com` | member portal | `susu` |
+
+The console and the portal are one deployment split by hostname in middleware:
+`admin.*` 404s `/m/*`, `my.*` 404s `/admin/*`. Members never land on the
+administrator's domain.
+
 ## Environment
 
 | Key | Value |
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://qaelfwtbaehdwhnxkpid.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | your anon key |
-| `NEXT_PUBLIC_CONSOLE_URL` | the console deployment |
+| `NEXT_PUBLIC_CONSOLE_URL` | `https://admin.abbiewealthsusu.com` |
+| `NEXT_PUBLIC_MEMBER_URL` | `https://my.abbiewealthsusu.com` |
 | `NEXT_PUBLIC_WHATSAPP` | e.g. `233240000000` |
 | `NEXT_PUBLIC_EMAIL` | contact address |
 

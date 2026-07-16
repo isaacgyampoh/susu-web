@@ -1,11 +1,14 @@
 /** One place for the things that differ per deployment. */
 export const SITE = {
-  name: 'Susu',
+  name:    'Abbie Wealth',
+  full:    'Abbie Wealth Susu',
+  domain:  'abbiewealthsusu.com',
   tagline: 'Save daily. Collect on your day.',
-  // The admin console is a separate deployment — this is the only link to it.
-  consoleUrl: process.env.NEXT_PUBLIC_CONSOLE_URL ?? 'https://susu-navy.vercel.app',
-  whatsapp: process.env.NEXT_PUBLIC_WHATSAPP ?? '233240000000',
-  email: process.env.NEXT_PUBLIC_EMAIL ?? 'hello@susu.gh',
+  // Separate deployments, separate hostnames.
+  consoleUrl: process.env.NEXT_PUBLIC_CONSOLE_URL ?? 'https://admin.abbiewealthsusu.com',
+  memberUrl:  process.env.NEXT_PUBLIC_MEMBER_URL  ?? 'https://my.abbiewealthsusu.com',
+  whatsapp:   process.env.NEXT_PUBLIC_WHATSAPP    ?? '233240000000',
+  email:      process.env.NEXT_PUBLIC_EMAIL       ?? 'hello@abbiewealthsusu.com',
 }
 
 export const RULES = [
