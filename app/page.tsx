@@ -66,7 +66,7 @@ export default function Home() {
             <div>
               <p className="text-[12px] font-medium text-white/50">On your day you collect</p>
               <p className="text-[13px] text-white/60 mt-2.5 max-w-[340px]">
-                The full pot, plus the GHS 110 registration fee returned to you.
+                The whole pot is yours.
               </p>
             </div>
             <p className="text-[46px] sm:text-[56px] font-semibold tracking-[-.04em] leading-none tnum">

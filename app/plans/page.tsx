@@ -63,7 +63,7 @@ export default function Plans() {
                   <p className="text-[30px] font-semibold tracking-[-.03em] leading-none tnum mt-2">
                     <span className="text-[14px] align-[.45em] mr-0.5 text-ink-3">GHS</span>{ghs(total)}
                   </p>
-                  <p className="text-[12px] text-ink-3 mt-2">includes GHS {ghs(g.registration_fee)} registration fee back</p>
+                  <p className="text-[12px] text-ink-3 mt-2">on your assigned date</p>
                 </div>
 
                 <table className="w-full mt-5">
