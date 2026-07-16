@@ -4,7 +4,7 @@ import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { callFunction } from '@/lib/supabase'
 import type { SusuGroup } from '@/types'
-import { RULES, SITE } from '@/lib/site'
+import { RULES, SITE, waLink } from '@/lib/site'
 
 const ghs = (n: any) => Number(n ?? 0).toLocaleString('en-GH', { maximumFractionDigits: 0 })
 
@@ -75,7 +75,7 @@ export default function Join() {
       </p>
       <div className="flex flex-wrap gap-3 mt-8">
         <Link href="/" className="btn-dark">Back to home</Link>
-        <a href={`https://wa.me/${SITE.whatsapp}`} className="btn-line">Message us</a>
+        <a href={waLink()} className="btn-line">Message us</a>
       </div>
     </div>
   )

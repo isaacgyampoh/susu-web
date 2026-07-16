@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { SITE } from '@/lib/site'
+import { SITE , waLink } from '@/lib/site'
 
 export default function Footer() {
   return (
@@ -23,7 +23,7 @@ export default function Footer() {
             <div>
               <p className="t-label mb-3">Contact</p>
               <div className="flex flex-col gap-2.5">
-                <a href={`https://wa.me/${SITE.whatsapp}`} className="text-[14px] text-ink-2 hover:text-ink transition-colors">WhatsApp</a>
+                <a href={waLink()} className="text-[14px] text-ink-2 hover:text-ink transition-colors">WhatsApp</a>
                 <a href={`mailto:${SITE.email}`} className="text-[14px] text-ink-2 hover:text-ink transition-colors">Email</a>
               </div>
             </div>

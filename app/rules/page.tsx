@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { RULES, SITE } from '@/lib/site'
+import { RULES, SITE, waLink } from '@/lib/site'
 
 export const metadata: Metadata = {
   title: 'Rules and regulations',
@@ -41,7 +41,7 @@ export default function Rules() {
 
       <div className="flex flex-wrap gap-3 mt-10">
         <Link href="/plans" className="btn-dark">I understand — show me the groups</Link>
-        <a href={`https://wa.me/${SITE.whatsapp}`} className="btn-line">Ask a question first</a>
+        <a href={waLink()} className="btn-line">Ask a question first</a>
       </div>
     </div>
   )

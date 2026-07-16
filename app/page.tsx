@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { SITE, RULES } from '@/lib/site'
+import { SITE, RULES , waLink } from '@/lib/site'
 
 const STEPS = [
   { n: '01', t: 'Pick a group',     d: 'Each group has a daily amount, a size, and a cycle length. Pick the one that matches what you can genuinely pay every day.' },
@@ -162,7 +162,7 @@ export default function Home() {
           </p>
           <div className="flex flex-wrap gap-3 justify-center mt-9">
             <Link href="/plans" className="btn-dark">See open groups</Link>
-            <a href={`https://wa.me/${SITE.whatsapp}`} className="btn-line">Ask a question</a>
+            <a href={waLink()} className="btn-line">Ask a question</a>
           </div>
         </div>
       </section>

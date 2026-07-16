@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { callFunction } from '@/lib/supabase'
 import type { SusuGroup } from '@/types'
-import { SITE } from '@/lib/site'
+import { SITE , waLink } from '@/lib/site'
 
 const ghs = (n: any) => Number(n ?? 0).toLocaleString('en-GH', { maximumFractionDigits: 0 })
 
@@ -38,7 +38,7 @@ export default function Plans() {
           <p className="t-body mt-2 max-w-[380px] mx-auto">
             Groups open as cycles complete. Message us and we will tell you when the next one starts.
           </p>
-          <a href={`https://wa.me/${SITE.whatsapp}`} className="btn-dark btn-sm mt-6">Ask on WhatsApp</a>
+          <a href={waLink()} className="btn-dark btn-sm mt-6">Ask on WhatsApp</a>
         </div>
       )}
 
