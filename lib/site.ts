@@ -7,7 +7,7 @@ export const SITE = {
   // No portal URLs here, on purpose. This site takes applications and nothing
   // else — it must never advertise where the member portal or the console live.
   // Members receive their private link on WhatsApp when they are approved.
-  whatsapp:   process.env.NEXT_PUBLIC_WHATSAPP    ?? '233240000000',
+  whatsapp:   process.env.NEXT_PUBLIC_WHATSAPP    ?? '233550302322',
   email:      process.env.NEXT_PUBLIC_EMAIL       ?? 'hello@abbiewealthsusu.com',
 }
 
