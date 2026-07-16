@@ -34,10 +34,10 @@ export default function Nav() {
           ))}
         </nav>
 
-        <div className="hidden md:flex items-center gap-2">
-          <a href={SITE.memberUrl} className="text-[14px] font-medium text-ink-2 hover:text-ink transition-colors mr-3">
-            Member sign in
-          </a>
+        {/* No sign-in link, deliberately. Members reach their portal only by
+            the private link sent to them — the site never advertises where it
+            is. See components/footer.tsx for the same reasoning. */}
+        <div className="hidden md:flex items-center">
           <Link href="/plans" className="btn-dark btn-sm">Join a group</Link>
         </div>
 
@@ -57,7 +57,6 @@ export default function Nav() {
             {LINKS.map(({ href, label }) => (
               <Link key={href} href={href} className="py-3 text-[15px] font-medium">{label}</Link>
             ))}
-            <a href={SITE.memberUrl} className="py-3 text-[15px] font-medium text-ink-2">Member sign in</a>
             <Link href="/plans" className="btn-dark mt-3">Join a group</Link>
           </div>
         </div>

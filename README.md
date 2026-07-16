@@ -8,6 +8,14 @@ and administrator access should not share an origin, and this site holds no
 session and never sees member or admin data. It calls exactly two public Edge
 Functions: `groups-public` and `kyc-submit`.
 
+**There is no sign-in on this site, and there must not be one.** You can apply
+here; you cannot log in here. Members receive their private portal link on
+WhatsApp when they are approved. The site does not link to the portal, does not
+name its hostname, and does not carry the URL in config — an attacker reading
+this site should learn nothing about where the doors are. If someone later asks
+for a convenient "Member login" button in the nav, that is the request to
+refuse.
+
 ## Routes
 
 | Route | Purpose |

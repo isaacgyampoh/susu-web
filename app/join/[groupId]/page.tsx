@@ -64,9 +64,14 @@ export default function Join() {
     <div className="wrap py-20 max-w-[520px]">
       <h1 className="t-h2">Application received</h1>
       <p className="t-lead mt-4">
-        We will review your details and your Ghana Card. If you are approved you
-        will get a message with your member ID, your passcode and a link to your
-        portal — usually within 24 hours.
+        We will review your details and your Ghana Card, usually within 24 hours.
+      </p>
+      <p className="t-lead mt-4">
+        If you are approved we will send you a <strong className="text-ink font-medium">WhatsApp
+        message</strong> on {f.phone || 'the number you gave us'} containing your
+        private portal link, your member ID and your passcode. That link is how
+        you sign in — it is not on this website, and it is yours alone. Keep your
+        passcode private.
       </p>
       <div className="flex flex-wrap gap-3 mt-8">
         <Link href="/" className="btn-dark">Back to home</Link>

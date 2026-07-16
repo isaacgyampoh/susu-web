@@ -4,9 +4,9 @@ export const SITE = {
   full:    'Abbie Wealth Susu',
   domain:  'abbiewealthsusu.com',
   tagline: 'Save daily. Collect on your day.',
-  // Separate deployments, separate hostnames.
-  consoleUrl: process.env.NEXT_PUBLIC_CONSOLE_URL ?? 'https://admin.abbiewealthsusu.com',
-  memberUrl:  process.env.NEXT_PUBLIC_MEMBER_URL  ?? 'https://my.abbiewealthsusu.com',
+  // No portal URLs here, on purpose. This site takes applications and nothing
+  // else — it must never advertise where the member portal or the console live.
+  // Members receive their private link on WhatsApp when they are approved.
   whatsapp:   process.env.NEXT_PUBLIC_WHATSAPP    ?? '233240000000',
   email:      process.env.NEXT_PUBLIC_EMAIL       ?? 'hello@abbiewealthsusu.com',
 }
