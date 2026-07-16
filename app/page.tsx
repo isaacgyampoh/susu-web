@@ -3,10 +3,10 @@ import { SITE, RULES , waLink } from '@/lib/site'
 
 const STEPS = [
   { n: '01', t: 'Pick a group',     d: 'Each group has a daily amount, a size, and a cycle length. Pick the one that matches what you can genuinely pay every day.' },
-  { n: '02', t: 'Apply',            d: 'Send your details and your Ghana Card, and pay the registration fee. Your fee comes back to you inside your cashout.' },
+  { n: '02', t: 'Apply',            d: 'Send your details and your Ghana Card, and pay the registration fee.' },
   { n: '03', t: 'Get your slot',    d: 'Once approved, the system assigns your position in the rotation. You are told your exact collection date up front.' },
   { n: '04', t: 'Pay every day',    d: 'Pay through your portal before 6:00 PM. Every payment is recorded against your name the moment it lands.' },
-  { n: '05', t: 'Collect your day', d: 'On your date the whole pot is yours, plus your registration fee back. Then you keep paying until every member has collected.' },
+  { n: '05', t: 'Collect your day', d: 'On your date the whole pot is yours. Then you keep paying until every member has collected.' },
 ]
 
 export default function Home() {
@@ -85,9 +85,13 @@ export default function Home() {
       <section id="how" className="border-b border-line scroll-mt-16">
         <div className="wrap py-16 sm:py-20">
           <h2 className="t-h2 max-w-[520px]">How it works</h2>
-          <p className="t-lead mt-4 max-w-[520px]">
-            Susu is old. What is new here is the record: every payment, every date,
-            every position, written down and visible to you.
+          <p className="t-lead mt-4 max-w-[560px]">
+            Susu has been around for generations but we&apos;ve modernized the experience.
+          </p>
+          <p className="t-lead mt-3 max-w-[560px]">
+            With Abbie Wealth Susu, every payment, transaction, position, and cash-out
+            date is securely recorded and available for you to view anytime through
+            your personal dashboard.
           </p>
 
           <div className="mt-12 divide-y divide-line border-y border-line">
