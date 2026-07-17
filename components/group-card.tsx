@@ -11,6 +11,7 @@ import { cashoutOf, ghs, isOpen } from '@/lib/groups'
  * up.
  */
 export default function GroupCard({ g }: { g: SusuGroup }) {
+  const cashout = cashoutOf(g)
   const open = isOpen(g)
   const left = g.max_members - g.current_members
   const pct  = Math.round((g.current_members / g.max_members) * 100)
@@ -32,9 +33,13 @@ export default function GroupCard({ g }: { g: SusuGroup }) {
 
       <div className="mt-6">
         <p className="t-label">You collect</p>
-        <p className="text-[34px] font-semibold tracking-[-.03em] leading-none tnum mt-2">
-          <span className="text-[15px] align-[.45em] mr-0.5 text-ink-3">GHS</span>{ghs(cashoutOf(g))}
-        </p>
+        {cashout === null ? (
+          <p className="text-[15px] font-medium mt-2">Ask us</p>
+        ) : (
+          <p className="text-[34px] font-semibold tracking-[-.03em] leading-none tnum mt-2">
+            <span className="text-[15px] align-[.45em] mr-0.5 text-ink-3">GHS</span>{ghs(cashout)}
+          </p>
+        )}
         <p className="text-[12.5px] text-ink-2 mt-2">
           Pay GHS {ghs(g.contribution_amount)} {g.contribution_frequency} · {g.cycle_days}-day turns
         </p>

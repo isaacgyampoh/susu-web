@@ -88,8 +88,9 @@ export default function Join() {
     </div>
   )
 
-  const cashout = Number(group.cashout_amount ?? group.contribution_amount * group.max_members * group.cycle_days)
-  const total   = cashout   // commission is not part of what the member collects
+  // Exactly what the admin set. Never computed — a number we invent is not
+  // what the member gets paid.
+  const total = group.cashout_amount == null ? null : Number(group.cashout_amount)
   const field   = 'in'
 
   return (
@@ -107,7 +108,7 @@ export default function Join() {
             ['You pay',     `GHS ${ghs(group.contribution_amount)}`, 'every day'],
             ['Deadline',    (group.payment_deadline ?? '18:00').slice(0, 5), 'daily'],
             ['Registration', `GHS ${ghs(group.registration_fee)}`, 'one-time, non-refundable'],
-            ['You collect', `GHS ${ghs(total)}`, 'on your date'],
+            ['You collect', total === null ? 'Ask us' : `GHS ${ghs(total)}`, 'on your date'],
           ].map(([k, v, s]) => (
             <div key={k}>
               <p className="text-[11.5px] text-white/45">{k}</p>

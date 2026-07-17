@@ -31,14 +31,21 @@ export const isOpen = (g: SusuGroup) =>
   g.status === 'open' && g.current_members < g.max_members
 
 /**
- * What a member collects: the pot. Nothing else.
+ * What a member collects: exactly what the admin set. Never a calculation.
  *
- * The registration fee is the operator's commission. It was being added here,
- * so the site told applicants they would collect money that was never theirs.
- * It must never appear in a member-facing figure.
+ * This used to fall back to contribution x members x cycle_days when no cashout
+ * was set — a number this site invented, which is not what anyone is being paid.
+ * The admin decides the cashout in the console; every figure shown here is that
+ * value and nothing else.
+ *
+ * Returns null when it has not been set. A group with no cashout is not finished,
+ * and inventing a figure for it is how members get told the wrong number.
  */
-export const cashoutOf = (g: SusuGroup) =>
-  Number(g.cashout_amount ?? g.contribution_amount * g.max_members * g.cycle_days)
+export const cashoutOf = (g: SusuGroup): number | null =>
+  g.cashout_amount == null ? null : Number(g.cashout_amount)
+
+/** Only advertise groups whose payout the admin has actually decided. */
+export const isAdvertisable = (g: SusuGroup) => cashoutOf(g) !== null
 
 export const ghs = (n: unknown) =>
   Number(n ?? 0).toLocaleString('en-GH', { maximumFractionDigits: 0 })
