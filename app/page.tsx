@@ -1,5 +1,7 @@
 import Link from 'next/link'
-import { SITE, RULES , waLink } from '@/lib/site'
+import { SITE, RULES, waLink } from '@/lib/site'
+import { getOpenGroups, isOpen } from '@/lib/groups'
+import GroupCard from '@/components/group-card'
 
 const STEPS = [
   { n: '01', t: 'Pick a group',     d: 'Each group has a daily amount, a size, and a cycle length. Pick the one that matches what you can genuinely pay every day.' },
@@ -9,7 +11,14 @@ const STEPS = [
   { n: '05', t: 'Collect your day', d: 'On your date the whole pot is yours. Then you keep paying until every member has collected.' },
 ]
 
-export default function Home() {
+// Groups come from the console, so this page changes when you create one there.
+export const revalidate = 60
+
+export default async function Home() {
+  const groups = await getOpenGroups()
+  const open   = groups.filter(isOpen)
+  const closed = groups.filter(g => !isOpen(g))
+
   return (
     <>
       {/* Hero */}
@@ -19,7 +28,7 @@ export default function Home() {
           <img src="/cover.jpg" alt="" fetchPriority="high"
             className="absolute inset-0 w-full h-full object-cover" />
         </picture>
-        <div className="absolute inset-0 bg-gradient-to-b from-ink/20 via-ink/45 to-ink/75" />
+        <div className="absolute inset-0 bg-gradient-to-b from-ink/45 via-ink/70 to-ink" />
 
         <div className="wrap relative py-24 sm:py-32">
           <p className="text-[13px] font-medium text-white/50 mb-6">Rotating savings · Ghana</p>
@@ -37,47 +46,52 @@ export default function Home() {
           </p>
 
           <div className="flex flex-wrap gap-3 mt-9">
-            <Link href="/plans" className="btn bg-white text-ink hover:bg-white/90">See open groups</Link>
+            <Link href="#groups" className="btn bg-white text-ink hover:bg-white/90">
+              {open.length > 0 ? `See ${open.length} open ${open.length === 1 ? 'group' : 'groups'}` : 'See groups'}
+            </Link>
             <Link href="/#how" className="btn border border-white/25 text-white hover:bg-white/10">How it works</Link>
           </div>
         </div>
       </section>
 
-      {/* The arithmetic, stated plainly. This is the whole product. */}
-      <section className="border-b border-line">
+      {/* The groups themselves — the product, live from the console */}
+      <section id="groups" className="border-b border-line scroll-mt-16">
         <div className="wrap py-16 sm:py-20">
-          <p className="t-label mb-8">A cycle, in numbers</p>
-
-          <div className="grid sm:grid-cols-3 gap-px bg-line rounded-2xl overflow-hidden border border-line">
-            {[
-              { k: 'You pay',       v: 'GHS 55', s: 'every day, before 6:00 PM' },
-              { k: 'Group size',    v: '11',     s: 'one member collects per turn' },
-              { k: 'Each turn',     v: '30 days', s: 'then the next member collects' },
-            ].map(({ k, v, s }) => (
-              <div key={k} className="bg-surface p-7">
-                <p className="t-label">{k}</p>
-                <p className="text-[38px] font-semibold tracking-[-.03em] leading-none tnum mt-3">{v}</p>
-                <p className="text-[13px] text-ink-3 mt-2.5">{s}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-4 rounded-2xl bg-ink text-white p-7 sm:p-9 flex flex-wrap items-end justify-between gap-6">
+          <div className="flex flex-wrap items-baseline justify-between gap-4 mb-9">
             <div>
-              <p className="text-[12px] font-medium text-white/50">On your day you collect</p>
-              <p className="text-[13px] text-white/60 mt-2.5 max-w-[340px]">
-                The whole pot is yours.
+              <h2 className="t-h2">Open groups</h2>
+              <p className="t-lead mt-3 max-w-[480px]">
+                Pick what you can pay every single day — not what you hope to pay.
               </p>
             </div>
-            <p className="text-[46px] sm:text-[56px] font-semibold tracking-[-.04em] leading-none tnum">
-              <span className="text-[20px] align-[.45em] mr-1 text-white/50">GHS</span>16,540
-            </p>
+            {open.length > 0 && (
+              <Link href="/plans" className="text-[14px] font-medium text-ink-2 hover:text-ink transition-colors">
+                All groups
+              </Link>
+            )}
           </div>
 
-          <p className="text-[12.5px] text-ink-3 mt-4 max-w-[560px]">
-            Figures shown are an example. Each group sets its own amount, size and
-            cycle — the exact numbers for every open group are on the groups page.
-          </p>
+          {open.length === 0 ? (
+            <div className="card p-12 text-center">
+              <p className="t-h3">No groups are open right now</p>
+              <p className="t-body mt-2 max-w-[400px] mx-auto">
+                Groups open as cycles complete. Message us and we will tell you the
+                moment the next one starts.
+              </p>
+              <a href={waLink()} className="btn-dark mt-6">Ask on WhatsApp</a>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {open.slice(0, 6).map(g => <GroupCard key={g.id} g={g} />)}
+            </div>
+          )}
+
+          {closed.length > 0 && open.length > 0 && (
+            <p className="t-body mt-8">
+              {closed.length} other {closed.length === 1 ? 'group is' : 'groups are'} full or already
+              running. <Link href="/plans" className="text-ink font-medium underline underline-offset-4">See all</Link>
+            </p>
+          )}
         </div>
       </section>
 
@@ -108,7 +122,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Trust — the honest objection, answered */}
+      {/* Trust */}
       <section className="border-b border-line bg-bg">
         <div className="wrap py-16 sm:py-20">
           <h2 className="t-h2 max-w-[520px]">Why people trust it</h2>
@@ -128,7 +142,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Rules — surfaced, not buried */}
+      {/* Rules */}
       <section className="border-b border-line">
         <div className="wrap py-16 sm:py-20">
           <div className="flex flex-wrap items-baseline justify-between gap-4 mb-8">
@@ -165,7 +179,7 @@ export default function Home() {
             rotation starts and it closes to new members.
           </p>
           <div className="flex flex-wrap gap-3 justify-center mt-9">
-            <Link href="/plans" className="btn-dark">See open groups</Link>
+            <Link href="#groups" className="btn-dark">See open groups</Link>
             <a href={waLink()} className="btn-line">Ask a question</a>
           </div>
         </div>
