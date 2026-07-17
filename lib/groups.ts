@@ -30,10 +30,15 @@ export async function getOpenGroups(): Promise<SusuGroup[]> {
 export const isOpen = (g: SusuGroup) =>
   g.status === 'open' && g.current_members < g.max_members
 
-/** What a member actually collects: the pot, plus the fee returned. */
+/**
+ * What a member collects: the pot. Nothing else.
+ *
+ * The registration fee is the operator's commission. It was being added here,
+ * so the site told applicants they would collect money that was never theirs.
+ * It must never appear in a member-facing figure.
+ */
 export const cashoutOf = (g: SusuGroup) =>
-  Number(g.cashout_amount ?? g.contribution_amount * g.max_members * g.cycle_days) +
-  Number(g.registration_fee ?? 0)
+  Number(g.cashout_amount ?? g.contribution_amount * g.max_members * g.cycle_days)
 
 export const ghs = (n: unknown) =>
   Number(n ?? 0).toLocaleString('en-GH', { maximumFractionDigits: 0 })
