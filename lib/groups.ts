@@ -47,5 +47,16 @@ export const cashoutOf = (g: SusuGroup): number | null =>
 /** Only advertise groups whose payout the admin has actually decided. */
 export const isAdvertisable = (g: SusuGroup) => cashoutOf(g) !== null
 
-export const ghs = (n: unknown) =>
-  Number(n ?? 0).toLocaleString('en-GH', { maximumFractionDigits: 0 })
+/**
+ * Money, shown honestly.
+ *
+ * This rounded to whole cedis, so a GHS 10.90 contribution was advertised as
+ * "GHS 11" — a price the member does not pay, overstated by 10 pesewas a day.
+ * Whole amounts stay clean; anything with pesewas shows them.
+ */
+export const ghs = (n: unknown) => {
+  const v = Number(n ?? 0)
+  return v % 1 === 0
+    ? v.toLocaleString('en-GH', { maximumFractionDigits: 0 })
+    : v.toLocaleString('en-GH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
