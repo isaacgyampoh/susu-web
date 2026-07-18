@@ -11,14 +11,13 @@ const ghs = (n: any) => Number(n ?? 0).toLocaleString('en-GH', { maximumFraction
 export default function Join() {
   const { groupId }  = useParams<{ groupId: string }>()
   const params       = useSearchParams()
-  const [group, setGroup] = useState<SusuGroup | null>(null)
+  const [groups, setGroups] = useState<SusuGroup[]>([])
+  const [picked, setPicked] = useState<Set<string>>(new Set())
   const [loading, setL]   = useState(true)
   const [busy, setBusy]   = useState(false)
   const [err, setErr]     = useState('')
   const [done, setDone]   = useState(false)
 
-  const [front, setFront] = useState<File | null>(null)
-  const [back, setBack]   = useState<File | null>(null)
   const [agreed, setAgreed] = useState<boolean[]>(new Array(RULES.length).fill(false))
 
   const [f, setF] = useState({
@@ -31,23 +30,34 @@ export default function Join() {
   useEffect(() => {
     if (params.get('ref')?.startsWith('KYC-')) { setDone(true); setL(false); return }
     callFunction<{ groups: SusuGroup[] }>('groups-public').then(({ data }) => {
-      setGroup(data?.groups?.find(g => g.id === groupId) ?? null); setL(false)
+      const open = (data?.groups ?? []).filter(g => g.current_members < g.max_members)
+      setGroups(open)
+      // The group whose card they clicked arrives pre-ticked
+      if (open.some(g => g.id === groupId)) setPicked(new Set([groupId]))
+      setL(false)
     })
   }, [groupId, params])
 
+  const toggle = (id: string) =>
+    setPicked(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+
+  const chosen   = groups.filter(g => picked.has(g.id))
+  const totalReg = chosen.reduce((s, g) => s + Number(g.registration_fee || 0), 0)
   const allAgreed = agreed.every(Boolean)
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
+    if (chosen.length === 0) { setErr('Tick at least one group to join.'); return }
     if (!allAgreed) { setErr('Please tick every rule to continue.'); return }
-    if (!front || !back) { setErr('Please upload both sides of your Ghana Card.'); return }
     setBusy(true); setErr('')
 
     const fd = new FormData()
     Object.entries(f).forEach(([k, v]) => v && fd.append(k, v))
-    fd.append('selected_group_id', groupId)
-    fd.append('ghana_card_front', front)
-    fd.append('ghana_card_back', back)
+    fd.append('selected_group_ids', chosen.map(g => g.id).join(','))
 
     const { data, error } = await callFunction<{ paystack?: { authorization_url: string } }>(
       'kyc-submit', { method: 'POST', body: fd }
@@ -64,7 +74,7 @@ export default function Join() {
     <div className="wrap py-20 max-w-[520px]">
       <h1 className="t-h2">Application received</h1>
       <p className="t-lead mt-4">
-        We will review your details and your Ghana Card, usually within 24 hours.
+        We will review your details, usually within 24 hours.
       </p>
       <p className="t-lead mt-4">
         If you are approved we will send you a <strong className="text-ink font-medium">WhatsApp
@@ -80,18 +90,16 @@ export default function Join() {
     </div>
   )
 
-  if (!group) return (
+  if (groups.length === 0) return (
     <div className="wrap py-20 max-w-[520px]">
-      <h1 className="t-h2">Group not found</h1>
-      <p className="t-lead mt-3">It may have filled up and closed.</p>
-      <Link href="/plans" className="btn-dark mt-8">See open groups</Link>
+      <h1 className="t-h2">No groups are open right now</h1>
+      <p className="t-lead mt-3">They may have filled up and closed. Check back soon, or message us.</p>
+      <div className="flex flex-wrap gap-3 mt-8">
+        <Link href="/plans" className="btn-dark">See groups</Link>
+        <a href={waLink()} className="btn-line">Message us</a>
+      </div>
     </div>
   )
-
-  // Exactly what the admin set. Never computed — a number we invent is not
-  // what the member gets paid.
-  const total = group.cashout_amount == null ? null : Number(group.cashout_amount)
-  const field   = 'in'
 
   return (
     <div className="wrap py-14 sm:py-16 max-w-[720px]">
@@ -99,78 +107,122 @@ export default function Join() {
         Back to groups
       </Link>
 
-      {/* What they're committing to, restated before they commit */}
+      {/* What they're committing to, restated before they commit.
+          One group reads like a plan; several read like a portfolio. */}
       <div className="card p-6 mt-5 bg-ink border-ink text-white">
-        <p className="text-[12px] font-medium text-white/50">Applying to</p>
-        <h1 className="text-[24px] font-semibold tracking-[-.02em] mt-1">{group.name}</h1>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-5 mt-6">
-          {[
-            ['You pay',     `GHS ${ghs(group.contribution_amount)}`, 'every day'],
-            ['Deadline',    (group.payment_deadline ?? '18:00').slice(0, 5), 'daily'],
-            ['Registration', `GHS ${ghs(group.registration_fee)}`, 'one-time, non-refundable'],
-            ['You collect', total === null ? 'Ask us' : `GHS ${ghs(total)}`, 'on your date'],
-          ].map(([k, v, s]) => (
-            <div key={k}>
-              <p className="text-[11.5px] text-white/45">{k}</p>
-              <p className="text-[17px] font-semibold tnum mt-1">{v}</p>
-              <p className="text-[11px] text-white/40 mt-0.5">{s}</p>
+        <p className="text-[12px] font-medium text-white/50">
+          {chosen.length > 1 ? `Applying to ${chosen.length} groups` : 'Applying to'}
+        </p>
+        {chosen.length === 0 ? (
+          <h1 className="text-[24px] font-semibold tracking-[-.02em] mt-1">Choose your group below</h1>
+        ) : chosen.length === 1 ? (
+          <>
+            <h1 className="text-[24px] font-semibold tracking-[-.02em] mt-1">{chosen[0].name}</h1>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-5 mt-6">
+              {[
+                ['You pay',      `GHS ${ghs(chosen[0].contribution_amount)}`, 'every day'],
+                ['Deadline',     (chosen[0].payment_deadline ?? '18:00').slice(0, 5), 'daily'],
+                ['Registration', `GHS ${ghs(chosen[0].registration_fee)}`, 'one-time, non-refundable'],
+                ['You collect',  chosen[0].cashout_amount == null ? 'Ask us' : `GHS ${ghs(chosen[0].cashout_amount)}`, 'on your date'],
+              ].map(([k, v, s]) => (
+                <div key={k as string}>
+                  <p className="text-[11.5px] text-white/45">{k}</p>
+                  <p className="text-[17px] font-semibold tnum mt-1">{v}</p>
+                  <p className="text-[11px] text-white/40 mt-0.5">{s}</p>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        ) : (
+          <>
+            <div className="mt-3 divide-y divide-white/10">
+              {chosen.map(g => (
+                <div key={g.id} className="py-3 flex items-baseline justify-between gap-4">
+                  <p className="text-[15px] font-semibold">{g.name}</p>
+                  <p className="text-[12.5px] text-white/60 tnum text-right">
+                    pay GHS {ghs(g.contribution_amount)} daily → collect{' '}
+                    {g.cashout_amount == null ? 'ask us' : `GHS ${ghs(g.cashout_amount)}`}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 pt-4 border-t border-white/15 flex items-baseline justify-between">
+              <p className="text-[12px] text-white/50">Registration total — one-time, non-refundable</p>
+              <p className="text-[17px] font-semibold tnum">GHS {ghs(totalReg)}</p>
+            </div>
+          </>
+        )}
       </div>
 
       <form onSubmit={submit} className="mt-8 space-y-8">
         {err && <p className="text-[13.5px] text-red bg-red-50 border border-red/25 rounded-xl px-4 py-3">{err}</p>}
+
+        {/* You can join more than one group. Each has its own contributions
+            and its own payout day. */}
+        <section>
+          <h2 className="t-h3 mb-1">Your group{groups.length > 1 ? 's' : ''}</h2>
+          <p className="t-body mb-4">
+            Tick every group you want to join — one is fine, more is fine. Each runs separately with its own payout.
+          </p>
+          <div className="space-y-2.5">
+            {groups.map(g => {
+              const on = picked.has(g.id)
+              const spots = g.max_members - g.current_members
+              return (
+                <label key={g.id}
+                  className={`flex items-start gap-3 p-4 border rounded-xl cursor-pointer transition-colors ${
+                    on ? 'border-ink bg-bg' : 'border-line hover:border-ink/40'}`}>
+                  <input type="checkbox" checked={on} onChange={() => toggle(g.id)}
+                    className="mt-1 w-4 h-4 accent-ink shrink-0" />
+                  <span className="flex-1 min-w-0">
+                    <span className="flex items-baseline justify-between gap-3">
+                      <span className="text-[14.5px] font-semibold">{g.name}</span>
+                      <span className="text-[12px] text-ink-3 shrink-0">{spots} spot{spots === 1 ? '' : 's'} left</span>
+                    </span>
+                    <span className="block text-[13px] text-ink-2 mt-0.5 tnum">
+                      Pay GHS {ghs(g.contribution_amount)} daily · collect{' '}
+                      {g.cashout_amount == null ? 'ask us' : `GHS ${ghs(g.cashout_amount)}`} · registration GHS {ghs(g.registration_fee)}
+                    </span>
+                  </span>
+                </label>
+              )
+            })}
+          </div>
+        </section>
 
         <section>
           <h2 className="t-h3 mb-4">Your details</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2">
               <label className="in-lbl">Full name — exactly as on your Ghana Card</label>
-              <input className={field} required value={f.full_name} onChange={e => set('full_name', e.target.value)} />
+              <input className="in" required value={f.full_name} onChange={e => set('full_name', e.target.value)} />
             </div>
             <div>
               <label className="in-lbl">Phone number</label>
-              <input className={`${field} tnum`} type="tel" required inputMode="tel"
+              <input className="in tnum" type="tel" required inputMode="tel"
                 value={f.phone} onChange={e => set('phone', e.target.value)} placeholder="024 000 0000" />
             </div>
             <div>
               <label className="in-lbl">Date of birth</label>
-              <input className={field} type="date" required value={f.date_of_birth} onChange={e => set('date_of_birth', e.target.value)} />
+              <input className="in" type="date" required value={f.date_of_birth} onChange={e => set('date_of_birth', e.target.value)} />
             </div>
             <div>
               <label className="in-lbl">Ghana Card number</label>
-              <input className={field} required value={f.ghana_card_number}
+              <input className="in" required value={f.ghana_card_number}
                 onChange={e => set('ghana_card_number', e.target.value)} placeholder="GHA-XXXXXXXXX-X" />
             </div>
             <div>
               <label className="in-lbl">Occupation</label>
-              <input className={field} required value={f.occupation} onChange={e => set('occupation', e.target.value)} />
+              <input className="in" required value={f.occupation} onChange={e => set('occupation', e.target.value)} />
             </div>
             <div className="sm:col-span-2">
               <label className="in-lbl">Residential address</label>
-              <input className={field} required value={f.residential_address} onChange={e => set('residential_address', e.target.value)} />
+              <input className="in" required value={f.residential_address} onChange={e => set('residential_address', e.target.value)} />
             </div>
             <div className="sm:col-span-2">
               <label className="in-lbl">Email <span className="font-normal text-ink-3">— optional</span></label>
-              <input className={field} type="email" value={f.email} onChange={e => set('email', e.target.value)} />
+              <input className="in" type="email" value={f.email} onChange={e => set('email', e.target.value)} />
             </div>
-          </div>
-        </section>
-
-        <section>
-          <h2 className="t-h3 mb-1">Ghana Card</h2>
-          <p className="t-body mb-4">A clear photo of both sides. We use this to verify who you are.</p>
-          <div className="grid sm:grid-cols-2 gap-4">
-            {[['Front', front, setFront], ['Back', back, setBack]].map(([label, file, setter]: any) => (
-              <label key={label} className="border border-dashed border-line rounded-xl h-28 grid place-items-center cursor-pointer hover:border-ink transition-colors bg-bg px-4">
-                {file
-                  ? <span className="text-[13px] font-medium text-center break-all">{file.name}</span>
-                  : <span className="text-[13.5px] text-ink-3">Upload {label.toLowerCase()}</span>}
-                <input type="file" accept="image/*" className="hidden"
-                  onChange={e => setter(e.target.files?.[0] ?? null)} />
-              </label>
-            ))}
           </div>
         </section>
 
@@ -180,7 +232,7 @@ export default function Join() {
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <label className="in-lbl">Provider</label>
-              <select className={field} value={f.mobile_money_provider} onChange={e => set('mobile_money_provider', e.target.value)}>
+              <select className="in" value={f.mobile_money_provider} onChange={e => set('mobile_money_provider', e.target.value)}>
                 <option value="MTN">MTN Mobile Money</option>
                 <option value="Telecel">Telecel Cash</option>
                 <option value="AirtelTigo">AirtelTigo Money</option>
@@ -188,7 +240,7 @@ export default function Join() {
             </div>
             <div>
               <label className="in-lbl">Number</label>
-              <input className={`${field} tnum`} type="tel" required inputMode="tel"
+              <input className="in tnum" type="tel" required inputMode="tel"
                 value={f.mobile_money_number} onChange={e => set('mobile_money_number', e.target.value)} placeholder="024 000 0000" />
             </div>
           </div>
@@ -219,10 +271,13 @@ export default function Join() {
         </section>
 
         <div className="pt-2">
-          <button type="submit" disabled={busy || !allAgreed} className="btn-dark w-full">
+          <button type="submit" disabled={busy || !allAgreed || chosen.length === 0} className="btn-dark w-full">
             {busy ? 'Submitting…'
+              : chosen.length === 0 ? 'Tick at least one group to continue'
               : !allAgreed ? 'Tick every rule to continue'
-              : `Apply and pay GHS ${ghs(group.registration_fee)} registration`}
+              : totalReg > 0
+                ? `Apply${chosen.length > 1 ? ` to ${chosen.length} groups` : ''} and pay GHS ${ghs(totalReg)} registration`
+                : `Apply${chosen.length > 1 ? ` to ${chosen.length} groups` : ''}`}
           </button>
           <p className="text-[12.5px] text-ink-3 mt-3 text-center">
             The registration fee is not refunded. It is returned to you inside your cashout on your day.
