@@ -13,6 +13,7 @@ export default function Join() {
   const params       = useSearchParams()
   const [groups, setGroups] = useState<SusuGroup[]>([])
   const [picked, setPicked] = useState<Set<string>>(new Set())
+  const [slotsFor, setSlotsFor] = useState<Record<string, number>>({})
   const [loading, setL]   = useState(true)
   const [busy, setBusy]   = useState(false)
   const [err, setErr]     = useState('')
@@ -46,7 +47,9 @@ export default function Join() {
     })
 
   const chosen   = groups.filter(g => picked.has(g.id))
-  const totalReg = chosen.reduce((s, g) => s + Number(g.registration_fee || 0), 0)
+  const slotOf   = (id: string) => slotsFor[id] || 1
+  const totalReg = chosen.reduce((s, g) => s + Number(g.registration_fee || 0) * slotOf(g.id), 0)
+  const totalSlots = chosen.reduce((s, g) => s + slotOf(g.id), 0)
   const allAgreed = agreed.every(Boolean)
 
   async function submit(e: React.FormEvent) {
@@ -57,6 +60,7 @@ export default function Join() {
 
     const fd = new FormData()
     Object.entries(f).forEach(([k, v]) => v && fd.append(k, v))
+    fd.append('selected_groups', JSON.stringify(chosen.map(g => ({ id: g.id, slots: slotsFor[g.id] || 1 }))))
     fd.append('selected_group_ids', chosen.map(g => g.id).join(','))
 
     const { data, error } = await callFunction<{ paystack?: { authorization_url: string } }>(
@@ -120,10 +124,10 @@ export default function Join() {
             <h1 className="text-[24px] font-semibold tracking-[-.02em] mt-1">{chosen[0].name}</h1>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-5 mt-6">
               {[
-                ['You pay',      `GHS ${ghs(chosen[0].contribution_amount)}`, 'every day'],
+                ['You pay',      `GHS ${ghs(Number(chosen[0].contribution_amount) * slotOf(chosen[0].id))}`, slotOf(chosen[0].id) > 1 ? `every day · ${slotOf(chosen[0].id)} slots` : 'every day'],
                 ['Deadline',     (chosen[0].payment_deadline ?? '18:00').slice(0, 5), 'daily'],
-                ['Registration', `GHS ${ghs(chosen[0].registration_fee)}`, 'one-time, non-refundable'],
-                ['You collect',  chosen[0].cashout_amount == null ? 'Ask us' : `GHS ${ghs(chosen[0].cashout_amount)}`, 'on your date'],
+                ['Registration', `GHS ${ghs(Number(chosen[0].registration_fee) * slotOf(chosen[0].id))}`, 'one-time, non-refundable'],
+                ['You collect',  chosen[0].cashout_amount == null ? 'Ask us' : `GHS ${ghs(chosen[0].cashout_amount)}`, slotOf(chosen[0].id) > 1 ? `per slot · ${slotOf(chosen[0].id)} payout turns` : 'on your date'],
               ].map(([k, v, s]) => (
                 <div key={k as string}>
                   <p className="text-[11.5px] text-white/45">{k}</p>
@@ -138,10 +142,10 @@ export default function Join() {
             <div className="mt-3 divide-y divide-white/10">
               {chosen.map(g => (
                 <div key={g.id} className="py-3 flex items-baseline justify-between gap-4">
-                  <p className="text-[15px] font-semibold">{g.name}</p>
+                  <p className="text-[15px] font-semibold">{g.name}{slotOf(g.id) > 1 ? ` × ${slotOf(g.id)} slots` : ''}</p>
                   <p className="text-[12.5px] text-white/60 tnum text-right">
-                    pay GHS {ghs(g.contribution_amount)} daily → collect{' '}
-                    {g.cashout_amount == null ? 'ask us' : `GHS ${ghs(g.cashout_amount)}`}
+                    pay GHS {ghs(Number(g.contribution_amount) * slotOf(g.id))} daily → collect{' '}
+                    {g.cashout_amount == null ? 'ask us' : `GHS ${ghs(g.cashout_amount)}`}{slotOf(g.id) > 1 ? ` × ${slotOf(g.id)}` : ''}
                   </p>
                 </div>
               ))}
@@ -162,7 +166,7 @@ export default function Join() {
         <section>
           <h2 className="t-h3 mb-1">Your group{groups.length > 1 ? 's' : ''}</h2>
           <p className="t-body mb-4">
-            Tick every group you want to join — one is fine, more is fine. Each runs separately with its own payout.
+            Tick every group you want to join, and take more than one slot in a group if you want multiple payout turns. Each slot runs separately with its own payout.
           </p>
           <div className="space-y-2.5">
             {groups.map(g => {
@@ -183,6 +187,23 @@ export default function Join() {
                       Pay GHS {ghs(g.contribution_amount)} daily · collect{' '}
                       {g.cashout_amount == null ? 'ask us' : `GHS ${ghs(g.cashout_amount)}`} · registration GHS {ghs(g.registration_fee)}
                     </span>
+                    {on && (
+                      <span className="flex items-center gap-2 mt-2.5 flex-wrap" onClick={e => e.preventDefault()}>
+                        <span className="text-[12.5px] text-ink-2">How many slots?</span>
+                        {[1, 2, 3, 4, 5].map(n => (
+                          <button key={n} type="button"
+                            onClick={e => { e.stopPropagation(); setSlotsFor(prev => ({ ...prev, [g.id]: n })) }}
+                            disabled={g.current_members + n > g.max_members}
+                            className={`w-9 h-9 rounded-lg text-[14px] font-semibold transition-colors disabled:opacity-30 ${
+                              slotOf(g.id) === n ? 'bg-ink text-white' : 'border border-line text-ink-2 hover:border-ink/40'}`}>
+                            {n}
+                          </button>
+                        ))}
+                        <span className="text-[11.5px] text-ink-3 w-full">
+                          Each slot is its own plan — its own daily payment and its own payout turn.
+                        </span>
+                      </span>
+                    )}
                   </span>
                 </label>
               )
@@ -276,8 +297,8 @@ export default function Join() {
               : chosen.length === 0 ? 'Tick at least one group to continue'
               : !allAgreed ? 'Tick every rule to continue'
               : totalReg > 0
-                ? `Apply${chosen.length > 1 ? ` to ${chosen.length} groups` : ''} and pay GHS ${ghs(totalReg)} registration`
-                : `Apply${chosen.length > 1 ? ` to ${chosen.length} groups` : ''}`}
+                ? `Apply for ${totalSlots} slot${totalSlots > 1 ? 's' : ''} and pay GHS ${ghs(totalReg)} registration`
+                : `Apply for ${totalSlots} slot${totalSlots > 1 ? 's' : ''}`}
           </button>
           <p className="text-[12.5px] text-ink-3 mt-3 text-center">
             The registration fee is not refunded. It is returned to you inside your cashout on your day.
