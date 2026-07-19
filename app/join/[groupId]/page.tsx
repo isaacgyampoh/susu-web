@@ -14,6 +14,7 @@ export default function Join() {
   const [groups, setGroups] = useState<SusuGroup[]>([])
   const [picked, setPicked] = useState<Set<string>>(new Set())
   const [slotsFor, setSlotsFor] = useState<Record<string, number>>({})
+  const [fracFor, setFracFor]   = useState<Record<string, number>>({})
   const [loading, setL]   = useState(true)
   const [busy, setBusy]   = useState(false)
   const [err, setErr]     = useState('')
@@ -48,7 +49,9 @@ export default function Join() {
 
   const chosen   = groups.filter(g => picked.has(g.id))
   const slotOf   = (id: string) => slotsFor[id] || 1
-  const totalReg = chosen.reduce((s, g) => s + Number(g.registration_fee || 0) * slotOf(g.id), 0)
+  const fracOf   = (id: string) => fracFor[id] ?? 1
+  const fracLbl  = (id: string) => fracOf(id) === 0.25 ? 'quarter' : fracOf(id) === 0.5 ? 'half' : 'full'
+  const totalReg = chosen.reduce((s, g) => s + Number(g.registration_fee || 0) * slotOf(g.id) * fracOf(g.id), 0)
   const totalSlots = chosen.reduce((s, g) => s + slotOf(g.id), 0)
   const allAgreed = agreed.every(Boolean)
 
@@ -60,7 +63,7 @@ export default function Join() {
 
     const fd = new FormData()
     Object.entries(f).forEach(([k, v]) => v && fd.append(k, v))
-    fd.append('selected_groups', JSON.stringify(chosen.map(g => ({ id: g.id, slots: slotsFor[g.id] || 1 }))))
+    fd.append('selected_groups', JSON.stringify(chosen.map(g => ({ id: g.id, slots: slotsFor[g.id] || 1, fraction: fracFor[g.id] ?? 1 }))))
     fd.append('selected_group_ids', chosen.map(g => g.id).join(','))
 
     const { data, error } = await callFunction<{ paystack?: { authorization_url: string } }>(
@@ -124,10 +127,10 @@ export default function Join() {
             <h1 className="text-[24px] font-semibold tracking-[-.02em] mt-1">{chosen[0].name}</h1>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-5 mt-6">
               {[
-                ['You pay',      `GHS ${ghs(Number(chosen[0].contribution_amount) * slotOf(chosen[0].id))}`, slotOf(chosen[0].id) > 1 ? `every day · ${slotOf(chosen[0].id)} slots` : 'every day'],
+                ['You pay',      `GHS ${ghs(Number(chosen[0].contribution_amount) * slotOf(chosen[0].id) * fracOf(chosen[0].id))}`, slotOf(chosen[0].id) > 1 || fracOf(chosen[0].id) < 1 ? `every day · ${slotOf(chosen[0].id)} ${fracLbl(chosen[0].id)} slot${slotOf(chosen[0].id) > 1 ? 's' : ''}` : 'every day'],
                 ['Deadline',     (chosen[0].payment_deadline ?? '18:00').slice(0, 5), 'daily'],
-                ['Registration', `GHS ${ghs(Number(chosen[0].registration_fee) * slotOf(chosen[0].id))}`, 'one-time, non-refundable'],
-                ['You collect',  chosen[0].cashout_amount == null ? 'Ask us' : `GHS ${ghs(chosen[0].cashout_amount)}`, slotOf(chosen[0].id) > 1 ? `per slot · ${slotOf(chosen[0].id)} payout turns` : 'on your date'],
+                ['Registration', `GHS ${ghs(Number(chosen[0].registration_fee) * slotOf(chosen[0].id) * fracOf(chosen[0].id))}`, 'one-time, non-refundable'],
+                ['You collect',  chosen[0].cashout_amount == null ? 'Ask us' : `GHS ${ghs(Number(chosen[0].cashout_amount) * fracOf(chosen[0].id))}`, slotOf(chosen[0].id) > 1 ? `per slot · ${slotOf(chosen[0].id)} payout turns` : 'on your date'],
               ].map(([k, v, s]) => (
                 <div key={k as string}>
                   <p className="text-[11.5px] text-white/45">{k}</p>
@@ -142,10 +145,10 @@ export default function Join() {
             <div className="mt-3 divide-y divide-white/10">
               {chosen.map(g => (
                 <div key={g.id} className="py-3 flex items-baseline justify-between gap-4">
-                  <p className="text-[15px] font-semibold">{g.name}{slotOf(g.id) > 1 ? ` × ${slotOf(g.id)} slots` : ''}</p>
+                  <p className="text-[15px] font-semibold">{g.name}{slotOf(g.id) > 1 || fracOf(g.id) < 1 ? ` × ${slotOf(g.id)} ${fracLbl(g.id)} slot${slotOf(g.id) > 1 ? 's' : ''}` : ''}</p>
                   <p className="text-[12.5px] text-white/60 tnum text-right">
-                    pay GHS {ghs(Number(g.contribution_amount) * slotOf(g.id))} daily → collect{' '}
-                    {g.cashout_amount == null ? 'ask us' : `GHS ${ghs(g.cashout_amount)}`}{slotOf(g.id) > 1 ? ` × ${slotOf(g.id)}` : ''}
+                    pay GHS {ghs(Number(g.contribution_amount) * slotOf(g.id) * fracOf(g.id))} daily → collect{' '}
+                    {g.cashout_amount == null ? 'ask us' : `GHS ${ghs(Number(g.cashout_amount) * fracOf(g.id))}`}{slotOf(g.id) > 1 ? ` × ${slotOf(g.id)}` : ''}
                   </p>
                 </div>
               ))}
@@ -189,7 +192,16 @@ export default function Join() {
                     </span>
                     {on && (
                       <span className="flex items-center gap-2 mt-2.5 flex-wrap" onClick={e => e.preventDefault()}>
-                        <span className="text-[12.5px] text-ink-2">How many slots?</span>
+                        <span className="text-[12.5px] text-ink-2 w-full">Slot size — a half slot pays half the daily amount and collects half the cashout:</span>
+                        {([[0.25, '¼ Quarter'], [0.5, '½ Half'], [1, 'Full']] as [number, string][]).map(([f, lbl]) => (
+                          <button key={f} type="button"
+                            onClick={e => { e.stopPropagation(); setFracFor(prev => ({ ...prev, [g.id]: f })) }}
+                            className={`px-3 h-9 rounded-lg text-[13px] font-semibold transition-colors ${
+                              fracOf(g.id) === f ? 'bg-ink text-white' : 'border border-line text-ink-2 hover:border-ink/40'}`}>
+                            {lbl}
+                          </button>
+                        ))}
+                        <span className="text-[12.5px] text-ink-2 w-full mt-1">How many slots?</span>
                         {[1, 2, 3, 4, 5].map(n => (
                           <button key={n} type="button"
                             onClick={e => { e.stopPropagation(); setSlotsFor(prev => ({ ...prev, [g.id]: n })) }}
