@@ -28,7 +28,9 @@ export async function getOpenGroups(): Promise<SusuGroup[]> {
 }
 
 export const isOpen = (g: SusuGroup) =>
-  g.status === 'open' && g.current_members < g.max_members
+  // Joinable = the admin shows it (server-side toggle) and spots remain.
+  // Status no longer gates it: an ACTIVE group keeps recruiting until full.
+  ['open', 'full', 'active'].includes(g.status) && g.current_members < g.max_members
 
 /**
  * What a member collects: exactly what the admin set. Never a calculation.
