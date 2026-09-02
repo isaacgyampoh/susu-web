@@ -36,15 +36,36 @@ export function waLink(text?: string): string {
   return text ? `https://wa.me/${n}?text=${encodeURIComponent(text)}` : `https://wa.me/${n}`
 }
 
+/**
+ * The rules, as the system actually enforces them.
+ *
+ * ────────────────────────────────────────────────────────────────────────
+ * One line used to read: "Your registration fee is added to your cashout on
+ * your day." It was not true, and had not been since migration v7 — which
+ * states plainly that the registration fee "is the operator's commission: it
+ * stays with the operator and must never appear in a member's figure", sets
+ * `reg_fee_to_cashout` to false on every group, and removes it from the payout
+ * arithmetic.
+ *
+ * Checked against production before changing this: of 269 memberships with a
+ * payout amount, ZERO are set to cashout + registration fee. The arithmetic was
+ * corrected; this website was not, so it kept promising money back to people
+ * paying up to GHS 995 to join.
+ *
+ * Every line below now describes behaviour that is implemented and tested. If a
+ * rule changes in the system, it changes here.
+ */
 export const RULES = [
   { r: 'You must be 18 years or older.', hard: true },
   { r: 'You must have a steady source of income.', hard: false },
-  { r: 'The registration fee is not refunded once paid.', hard: true },
+  { r: 'All payments are non-refundable — registration fees, contributions and any other money sent to us.', hard: true },
+  { r: 'The registration fee is a one-time joining charge. It is not a deposit and is not added to your cashout.', hard: true },
+  { r: 'Only join groups whose daily contribution you can comfortably afford.', hard: true },
   { r: 'Contributions must be paid before 6:00 PM every day.', hard: true },
   { r: 'Late payments are flagged automatically and carry a penalty.', hard: true },
-  { r: 'Defaulting forfeits your slot. No consideration is given.', hard: true },
-  { r: 'The system assigns your slot when the group fills.', hard: false },
+  { r: 'Defaulting forfeits your slot. Money already contributed does not entitle you to the payout.', hard: true },
+  { r: 'Your slot is set when the group starts and is not changed afterwards except by an administrator, with a recorded reason.', hard: false },
   { r: 'You must complete the full cycle. Do not join otherwise.', hard: true },
   { r: 'A valid Ghana Card is required for verification.', hard: false },
-  { r: 'Your registration fee is added to your cashout on your day.', hard: false },
+  { r: 'Payments are collected by mobile money through NaloPay, and are only recorded once NaloPay confirms them.', hard: false },
 ]

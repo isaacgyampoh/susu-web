@@ -66,12 +66,26 @@ export default function Join() {
     fd.append('selected_groups', JSON.stringify(chosen.map(g => ({ id: g.id, slots: slotsFor[g.id] || 1, fraction: fracFor[g.id] ?? 1 }))))
     fd.append('selected_group_ids', chosen.map(g => g.id).join(','))
 
-    const { data, error } = await callFunction<{ paystack?: { authorization_url: string } }>(
-      'kyc-submit', { method: 'POST', body: fd }
-    )
+    /*
+     * The applicant is handed straight to the registration payment page.
+     *
+     * This used to look for `data.paystack.authorization_url` — a provider
+     * removed from the platform long ago. `kyc-submit` never returns that, so
+     * the branch was dead and every applicant fell through to "Application
+     * received" having paid nothing. Meanwhile the submit button promised
+     * "... and pay GHS X registration".
+     *
+     * `payment_url` carries a capability token that is returned exactly once
+     * and is not recoverable, so it is followed immediately. An SMS carries the
+     * same link for anyone who closes the tab.
+     */
+    const { data, error } = await callFunction<{
+      kyc_id: string; fee: number; fee_paid: boolean
+      payment_url: string | null; payment_link_expires_at: string | null
+    }>('kyc-submit', { method: 'POST', body: fd })
     setBusy(false)
     if (error) { setErr(error); return }
-    if (data?.paystack?.authorization_url) { window.location.href = data.paystack.authorization_url; return }
+    if (data?.payment_url) { window.location.href = data.payment_url; return }
     setDone(true)
   }
 
@@ -312,8 +326,14 @@ export default function Join() {
                 ? `Apply for ${totalSlots} slot${totalSlots > 1 ? 's' : ''} and pay GHS ${ghs(totalReg)} registration`
                 : `Apply for ${totalSlots} slot${totalSlots > 1 ? 's' : ''}`}
           </button>
-          <p className="text-[12.5px] text-ink-3 mt-3 text-center">
-            The registration fee is not refunded. It is returned to you inside your cashout on your day.
+          {/* This used to read "The registration fee is not refunded. It is
+              returned to you inside your cashout on your day." — which
+              contradicts itself, and the second half was not true: the fee is
+              the operator's commission and has been excluded from every payout
+              since migration v7. */}
+          <p className="text-[12.5px] text-ink-3 mt-3 text-center leading-relaxed">
+            All payments are non-refundable. The registration fee is a one-time joining
+            charge — it is not a deposit and is not added to your cashout.
           </p>
         </div>
       </form>
