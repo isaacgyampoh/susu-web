@@ -15,12 +15,31 @@ export const metadata: Metadata = {
   description:
     'Abbie Wealth Susu — a trusted rotating savings group in Ghana. Contribute daily, collect the whole pot on your assigned day. Every payment recorded, every date known in advance.',
   keywords: ['susu', 'rotating savings', 'Ghana', 'daily contribution', 'community savings', 'esusu'],
+  /*
+   * ── THE SHARE CARD ──────────────────────────────────────────────────────
+   * There was no og:image at all, while twitter.card was already declared
+   * summary_large_image — a card type that REQUIRES one. So every share of
+   * this link rendered as a bare URL with no picture.
+   *
+   * That matters more here than it would elsewhere. This site is passed around
+   * on WhatsApp, and a savings product arriving as an unadorned link is exactly
+   * what a scam looks like. The card carries the same photograph and dark field
+   * as the two portals, so the preview looks like the thing it opens.
+   */
   openGraph: {
     type: 'website', locale: 'en_GH', url, siteName: 'Abbie Wealth Susu',
     title: 'Abbie Wealth Susu — Save daily, collect on your day',
     description: 'Contribute daily, collect the whole pot on your assigned day. Run on a proper ledger.',
+    images: [{
+      url: '/og.jpg', width: 1200, height: 630,
+      alt: 'Abbie Wealth Susu — save daily, collect on your day',
+    }],
   },
-  twitter: { card: 'summary_large_image', title: 'Abbie Wealth Susu — Save daily, collect on your day' },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Abbie Wealth Susu — Save daily, collect on your day',
+    images: ['/og.jpg'],
+  },
   robots: { index: true, follow: true },
 }
 

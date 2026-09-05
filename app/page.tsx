@@ -23,12 +23,34 @@ export default async function Home() {
     <>
       {/* Hero */}
       <section className="relative overflow-hidden bg-ink">
+        {/*
+          The same two members, on the same dark field, as both portals and the
+          share card. Somebody who applies here and later signs in should not
+          feel they have arrived somewhere else.
+
+          `cover.jpg` — an abstract pattern — was here before the photograph
+          existed. The scrim runs left-to-right rather than top-to-bottom,
+          because the subject sits on the right and the type on the left; a
+          vertical wash would grey out the faces it is meant to leave alone.
+
+          Inset from the right edge, not flush to it: flush, the viewport
+          boundary sliced down his shoulder and he read as cut off — the same
+          mistake the sign-in screen made before it was measured.
+
+          Kept on phones at a smaller height rather than hidden. Most of this
+          site's traffic is a phone, and hiding the only photograph there leaves
+          the weakest version of the page to the people most likely to see it.
+        */}
         <picture>
-          <source srcSet="/cover.webp" type="image/webp" />
-          <img src="/cover.jpg" alt="" fetchPriority="high"
-            className="absolute inset-0 w-full h-full object-cover" />
+          <source srcSet="/brand-collection.webp" type="image/webp" />
+          <img src="/brand-collection.png" alt="" fetchPriority="high"
+            className="absolute bottom-0 right-[2%] sm:right-[4%] w-auto object-contain
+                       h-[46%] sm:h-[80%] lg:h-[88%]" />
         </picture>
-        <div className="absolute inset-0 bg-gradient-to-b from-ink/45 via-ink/70 to-ink" />
+        {/* One scrim, left to right. A second bottom-up fade was here briefly
+            and greyed out the lower half of the photograph — his shirt turned
+            to mud — to protect text that does not sit there. */}
+        <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/80 to-ink/20 sm:to-transparent" />
 
         <div className="wrap relative py-24 sm:py-32">
           <p className="text-[13px] font-medium text-white/50 mb-6">Rotating savings · Ghana</p>
