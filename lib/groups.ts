@@ -62,3 +62,27 @@ export const ghs = (n: unknown) => {
     ? v.toLocaleString('en-GH', { maximumFractionDigits: 0 })
     : v.toLocaleString('en-GH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
+
+
+/**
+ * The places a group sells, cheapest last, as the administrator configured them.
+ *
+ * Nothing is derived here. A half place is whatever the group says a half place
+ * costs and pays — it does not have to be half of anything, which is the whole
+ * reason portions stopped being a multiplication.
+ *
+ * Returns [] for a group with none configured, and the card then shows only the
+ * full figures rather than inventing smaller ones.
+ */
+export const portionsOf = (g: SusuGroup) =>
+  (g.group_portions ?? [])
+    .filter(p => Number(p.contribution_amount) > 0)
+    .slice()
+    .sort((a, b) => a.sort_order - b.sort_order)
+
+/** The cheapest way in. What a card should lead with for someone deciding. */
+export const cheapestEntry = (g: SusuGroup): number | null => {
+  const ps = portionsOf(g)
+  if (ps.length === 0) return null
+  return Math.min(...ps.map(p => Number(p.contribution_amount)))
+}

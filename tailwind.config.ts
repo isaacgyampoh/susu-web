@@ -12,6 +12,8 @@ const config: Config = {
         'ink-3': '#9A9AA3',
         line:    '#E6E6E9',
         red:     { DEFAULT: '#C4302B', 50: '#FDF3F2', 200: '#F0C7C4' },
+        // The app's brand green, exactly. One product, one green.
+        accent:  { DEFAULT: '#0B7A55', soft: '#E7F4EF', line: '#B9E0D0' },
       },
       fontFamily: { sans: ['var(--font-geist-sans)', '-apple-system', 'system-ui', 'sans-serif'] },
       animation: { 'fade-in': 'fadeIn .3s ease-out', 'rise': 'rise .5s cubic-bezier(.16,1,.3,1)' },

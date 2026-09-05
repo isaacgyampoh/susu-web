@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { callFunction } from '@/lib/supabase'
 import type { SusuGroup } from '@/types'
 import { RULES, SITE, waLink } from '@/lib/site'
+import { portionsOf } from '@/lib/groups'
 
 const ghs = (n: any) => Number(n ?? 0).toLocaleString('en-GH', { maximumFractionDigits: 0 })
 
@@ -140,12 +141,35 @@ export default function Join() {
           <>
             <h1 className="text-[24px] font-semibold tracking-[-.02em] mt-1">{chosen[0].name}</h1>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-5 mt-6">
-              {[
-                ['You pay',      `GHS ${ghs(Number(chosen[0].contribution_amount) * slotOf(chosen[0].id) * fracOf(chosen[0].id))}`, slotOf(chosen[0].id) > 1 || fracOf(chosen[0].id) < 1 ? `every day · ${slotOf(chosen[0].id)} ${fracLbl(chosen[0].id)} slot${slotOf(chosen[0].id) > 1 ? 's' : ''}` : 'every day'],
-                ['Deadline',     (chosen[0].payment_deadline ?? '18:00').slice(0, 5), 'daily'],
-                ['Registration', `GHS ${ghs(Number(chosen[0].registration_fee) * slotOf(chosen[0].id) * fracOf(chosen[0].id))}`, 'one-time, non-refundable'],
-                ['You collect',  chosen[0].cashout_amount == null ? 'Ask us' : `GHS ${ghs(Number(chosen[0].cashout_amount) * fracOf(chosen[0].id))}`, slotOf(chosen[0].id) > 1 ? `per slot · ${slotOf(chosen[0].id)} payout turns` : 'on your date'],
-              ].map(([k, v, s]) => (
+              {/*
+                ── THE NUMBERS AN APPLICANT COMMITS TO ────────────────────
+                All three of these used to be a multiplication:
+                contribution x slots x fraction, registration x slots x
+                fraction, cashout x fraction. That was right when a fraction
+                decided the money and is wrong now — a group states what each
+                place costs and pays, and a half need not be half.
+
+                This is the screen where somebody agrees to pay daily for
+                months. Showing a figure derived by the browser rather than the
+                one the group actually set is the last place to do it, so each
+                comes from the chosen portion. Only the SLOT COUNT is multiplied
+                here, because taking three places genuinely costs three times
+                one place.
+              */}
+              {(() => {
+                const gsel = chosen[0]
+                const n    = slotOf(gsel.id)
+                const por  = portionsOf(gsel).find(p => Number(p.fraction) === fracOf(gsel.id))
+                const pay  = por ? Number(por.contribution_amount) : Number(gsel.contribution_amount) * fracOf(gsel.id)
+                const reg  = por ? Number(por.registration_fee)    : Number(gsel.registration_fee) * fracOf(gsel.id)
+                const get  = por ? Number(por.payout_amount)
+                           : gsel.cashout_amount == null ? null : Number(gsel.cashout_amount) * fracOf(gsel.id)
+                return [
+                ['You pay',      `GHS ${ghs(pay * n)}`, n > 1 || fracOf(gsel.id) < 1 ? `every day · ${n} ${fracLbl(gsel.id)} slot${n > 1 ? 's' : ''}` : 'every day'],
+                ['Deadline',     (gsel.payment_deadline ?? '18:00').slice(0, 5), 'daily'],
+                ['Registration', `GHS ${ghs(reg * n)}`, 'one-time, non-refundable'],
+                ['You collect',  get == null ? 'Ask us' : `GHS ${ghs(get)}`, n > 1 ? `per slot · ${n} payout turns` : 'on your date'],
+              ]})().map(([k, v, s]) => (
                 <div key={k as string}>
                   <p className="text-[11.5px] text-white/45">{k}</p>
                   <p className="text-[17px] font-semibold tnum mt-1">{v}</p>
@@ -206,13 +230,45 @@ export default function Join() {
                     </span>
                     {on && (
                       <span className="flex items-center gap-2 mt-2.5 flex-wrap" onClick={e => e.preventDefault()}>
-                        <span className="text-[12.5px] text-ink-2 w-full">Slot size — a half slot pays half the daily amount and collects half the cashout:</span>
-                        {([[0.25, '¼ Quarter'], [0.5, '½ Half'], [1, 'Full']] as [number, string][]).map(([f, lbl]) => (
+                        {/*
+                          The label used to read "a half slot pays half the
+                          daily amount and collects half the cashout". That was
+                          true when half was a multiplication and is not true
+                          now: a group states what each place costs and pays,
+                          and a half need not be half of anything.
+
+                          Telling an applicant otherwise is a promise about
+                          their money made on the page where they commit it, so
+                          each option now carries the group's own figures. A
+                          group with none configured falls back to the three
+                          fractions, which is what the system does too.
+                        */}
+                        <span className="text-[12.5px] text-ink-2 w-full">
+                          Choose your place — each shows what you pay and what you collect:
+                        </span>
+                        {((portionsOf(g).length > 0
+                          ? portionsOf(g).map(p => ({
+                              f: Number(p.fraction), lbl: p.label,
+                              pay: Number(p.contribution_amount), get: Number(p.payout_amount),
+                            }))
+                          : [
+                              { f: 0.25, lbl: 'Quarter', pay: null as number | null, get: null as number | null },
+                              { f: 0.5,  lbl: 'Half',    pay: null as number | null, get: null as number | null },
+                              { f: 1,    lbl: 'Full',    pay: null as number | null, get: null as number | null },
+                            ]
+                        ) as { f: number; lbl: string; pay: number | null; get: number | null }[]
+                        ).map(({ f, lbl, pay, get }) => (
                           <button key={f} type="button"
                             onClick={e => { e.stopPropagation(); setFracFor(prev => ({ ...prev, [g.id]: f })) }}
-                            className={`px-3 h-9 rounded-lg text-[13px] font-semibold transition-colors ${
+                            className={`px-3 py-2 rounded-lg text-left transition-colors ${
                               fracOf(g.id) === f ? 'bg-ink text-white' : 'border border-line text-ink-2 hover:border-ink/40'}`}>
-                            {lbl}
+                            <span className="block text-[13px] font-semibold">{lbl}</span>
+                            {pay !== null && (
+                              <span className={`block text-[11.5px] tnum mt-0.5 ${
+                                fracOf(g.id) === f ? 'text-white/70' : 'text-ink-3'}`}>
+                                GHS {ghs(pay)} · get GHS {ghs(get!)}
+                              </span>
+                            )}
                           </button>
                         ))}
                         <span className="text-[12.5px] text-ink-2 w-full mt-1">How many slots?</span>
