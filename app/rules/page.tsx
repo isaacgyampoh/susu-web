@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { RULES, SITE, waLink } from '@/lib/site'
+import { RULES, waLink } from '@/lib/site'
 
 export const metadata: Metadata = {
   title: 'Rules and regulations',
@@ -32,7 +32,7 @@ export default function Rules() {
         <h2 className="t-h3">Before you apply</h2>
         <p className="text-[14px] leading-relaxed text-ink-2 mt-2">
           A susu only works because every member pays every day. If you miss
-          payments, someone else's collection date is at risk — not just yours.
+          payments, someone else&rsquo;s collection date is at risk — not just yours.
           That is why defaulting forfeits your slot and the registration fee is
           not returned. If you are not certain you can pay every day for the full
           cycle, please do not apply.

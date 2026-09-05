@@ -4,7 +4,7 @@ import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { callFunction } from '@/lib/supabase'
 import type { SusuGroup } from '@/types'
-import { RULES, SITE, waLink } from '@/lib/site'
+import { RULES, waLink } from '@/lib/site'
 import { portionsOf, placeOf } from '@/lib/groups'
 
 const ghs = (n: any) => Number(n ?? 0).toLocaleString('en-GH', { maximumFractionDigits: 0 })
