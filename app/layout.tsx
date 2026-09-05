@@ -4,7 +4,16 @@ import './globals.css'
 import Nav from '@/components/nav'
 import Footer from '@/components/footer'
 
-const url = 'https://abbiewealthsusu.com'
+/*
+ * The canonical host, and deliberately the www one.
+ *
+ * The apex 308-redirects here, so pointing metadataBase at the apex made every
+ * absolute URL in the head — og:image, og:url, the canonical link — resolve
+ * through a redirect. Crawlers mostly follow one, but WhatsApp's is unreliable
+ * about it for og:image specifically, and WhatsApp is how this link travels.
+ * Naming the host that actually answers 200 removes the hop entirely.
+ */
+const url = 'https://www.abbiewealthsusu.com'
 
 export const metadata: Metadata = {
   metadataBase: new URL(url),
