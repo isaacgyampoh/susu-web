@@ -42,7 +42,7 @@ export default function Nav() {
         </div>
 
         <button onClick={() => setOpen(!open)} aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open}
-          className="md:hidden -mr-1 w-10 h-10 rounded-lg grid place-items-center active:bg-bg transition-colors">
+          className="md:hidden -mr-1.5 w-11 h-11 rounded-lg grid place-items-center active:bg-bg transition-colors">
           <span className="flex flex-col gap-[4.5px] w-[18px]">
             <span className={`h-[1.5px] w-full bg-ink rounded-full transition-transform ${open ? 'translate-y-[6px] rotate-45' : ''}`} />
             <span className={`h-[1.5px] w-full bg-ink rounded-full transition-opacity ${open ? 'opacity-0' : ''}`} />

@@ -278,7 +278,7 @@ export default function Join() {
                           <button key={n} type="button"
                             onClick={e => { e.stopPropagation(); setSlotsFor(prev => ({ ...prev, [g.id]: n })) }}
                             disabled={g.current_members + n > g.max_members}
-                            className={`w-9 h-9 rounded-lg text-[14px] font-semibold transition-colors disabled:opacity-30 ${
+                            className={`w-11 h-11 rounded-lg text-[14px] font-semibold transition-colors disabled:opacity-30 ${
                               slotOf(g.id) === n ? 'bg-ink text-white' : 'border border-line text-ink-2 hover:border-ink/40'}`}>
                             {n}
                           </button>

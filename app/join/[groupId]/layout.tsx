@@ -51,11 +51,11 @@ export async function generateMetadata(
   return {
     title,
     description,
-    // The card image stays the product's, not a per-group render: a generated
-    // image per group would need somewhere to render and cache it, and the
-    // words above already carry what a recipient needs to decide.
-    openGraph: { title, description, type: 'website', images: ['/og.jpg'] },
-    twitter:   { card: 'summary_large_image', title, description, images: ['/og.jpg'] },
+    // No `images` here on purpose: opengraph-image.tsx in this folder renders
+    // the per-group card, and Next wires it up automatically. Naming /og.jpg
+    // would override it with the generic one.
+    openGraph: { title, description, type: 'website' },
+    twitter:   { card: 'summary_large_image', title, description },
   }
 }
 
