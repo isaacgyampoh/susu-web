@@ -86,3 +86,37 @@ export const cheapestEntry = (g: SusuGroup): number | null => {
   if (ps.length === 0) return null
   return Math.min(...ps.map(p => Number(p.contribution_amount)))
 }
+
+
+/**
+ * What ONE place in a group costs and pays, at a given size.
+ *
+ * The single place the site resolves this. It was worked out inline in four
+ * different spots on the join page — the picker, the review panel, the total
+ * registration fee and the multi-group summary — each multiplying by the
+ * fraction, which stopped being true when portions became configuration.
+ * Four copies of a rule is how three of them end up wrong.
+ *
+ * Falls back to the old multiplication for a group with no portions, which is
+ * exactly what the server does, so the two never disagree.
+ */
+export function placeOf(g: SusuGroup, fraction: number) {
+  const p = portionsOf(g).find(x => Number(x.fraction) === fraction)
+  if (p) {
+    return {
+      pay: Number(p.contribution_amount),
+      registration: Number(p.registration_fee),
+      collect: Number(p.payout_amount),
+      label: p.label,
+      configured: true,
+    }
+  }
+  const cash = cashoutOf(g)
+  return {
+    pay: Number(g.contribution_amount ?? 0) * fraction,
+    registration: Number(g.registration_fee ?? 0) * fraction,
+    collect: cash === null ? null : cash * fraction,
+    label: fraction === 1 ? 'Full' : fraction === 0.5 ? 'Half' : 'Quarter',
+    configured: false,
+  }
+}

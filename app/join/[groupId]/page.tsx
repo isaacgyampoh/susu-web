@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { callFunction } from '@/lib/supabase'
 import type { SusuGroup } from '@/types'
 import { RULES, SITE, waLink } from '@/lib/site'
-import { portionsOf } from '@/lib/groups'
+import { portionsOf, placeOf } from '@/lib/groups'
 
 const ghs = (n: any) => Number(n ?? 0).toLocaleString('en-GH', { maximumFractionDigits: 0 })
 
@@ -52,7 +52,11 @@ export default function Join() {
   const slotOf   = (id: string) => slotsFor[id] || 1
   const fracOf   = (id: string) => fracFor[id] ?? 1
   const fracLbl  = (id: string) => fracOf(id) === 0.25 ? 'quarter' : fracOf(id) === 0.5 ? 'half' : 'full'
-  const totalReg = chosen.reduce((s, g) => s + Number(g.registration_fee || 0) * slotOf(g.id) * fracOf(g.id), 0)
+  // The registration total an applicant is about to owe. Was
+  // registration_fee x slots x fraction; the fee for a place is whatever the
+  // group set for that place.
+  const totalReg = chosen.reduce(
+    (sum, g) => sum + placeOf(g, fracOf(g.id)).registration * slotOf(g.id), 0)
   const totalSlots = chosen.reduce((s, g) => s + slotOf(g.id), 0)
   const allAgreed = agreed.every(Boolean)
 
@@ -159,11 +163,7 @@ export default function Join() {
               {(() => {
                 const gsel = chosen[0]
                 const n    = slotOf(gsel.id)
-                const por  = portionsOf(gsel).find(p => Number(p.fraction) === fracOf(gsel.id))
-                const pay  = por ? Number(por.contribution_amount) : Number(gsel.contribution_amount) * fracOf(gsel.id)
-                const reg  = por ? Number(por.registration_fee)    : Number(gsel.registration_fee) * fracOf(gsel.id)
-                const get  = por ? Number(por.payout_amount)
-                           : gsel.cashout_amount == null ? null : Number(gsel.cashout_amount) * fracOf(gsel.id)
+                const { pay, registration: reg, collect: get } = placeOf(gsel, fracOf(gsel.id))
                 return [
                 ['You pay',      `GHS ${ghs(pay * n)}`, n > 1 || fracOf(gsel.id) < 1 ? `every day · ${n} ${fracLbl(gsel.id)} slot${n > 1 ? 's' : ''}` : 'every day'],
                 ['Deadline',     (gsel.payment_deadline ?? '18:00').slice(0, 5), 'daily'],
@@ -185,8 +185,10 @@ export default function Join() {
                 <div key={g.id} className="py-3 flex items-baseline justify-between gap-4">
                   <p className="text-[15px] font-semibold">{g.name}{slotOf(g.id) > 1 || fracOf(g.id) < 1 ? ` × ${slotOf(g.id)} ${fracLbl(g.id)} slot${slotOf(g.id) > 1 ? 's' : ''}` : ''}</p>
                   <p className="text-[12.5px] text-white/60 tnum text-right">
-                    pay GHS {ghs(Number(g.contribution_amount) * slotOf(g.id) * fracOf(g.id))} daily → collect{' '}
-                    {g.cashout_amount == null ? 'ask us' : `GHS ${ghs(Number(g.cashout_amount) * fracOf(g.id))}`}{slotOf(g.id) > 1 ? ` × ${slotOf(g.id)}` : ''}
+                    pay GHS {ghs(placeOf(g, fracOf(g.id)).pay * slotOf(g.id))} daily → collect{' '}
+                    {placeOf(g, fracOf(g.id)).collect == null
+                      ? 'ask us'
+                      : `GHS ${ghs(placeOf(g, fracOf(g.id)).collect!)}`}{slotOf(g.id) > 1 ? ` × ${slotOf(g.id)}` : ''}
                   </p>
                 </div>
               ))}
