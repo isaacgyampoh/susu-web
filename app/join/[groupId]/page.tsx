@@ -201,200 +201,36 @@ export default function Join() {
         )}
       </div>
 
-      <form onSubmit={submit} className="mt-8 space-y-8">
-        {err && <p className="text-[13.5px] text-red bg-red-50 border border-red/25 rounded-xl px-4 py-3">{err}</p>}
+      {/*
+        ── JOINING IS A CONVERSATION NOW ──────────────────────────────────────
+        This page used to carry the whole application: identity, Ghana Card
+        photographs, group selection, registration fee. The owner places people
+        into rotations herself now, so a self-service form here would create
+        applications nobody is waiting for and collect ID the business did not
+        ask for.
 
-        {/* You can join more than one group. Each has its own contributions
-            and its own payout day. */}
-        <section>
-          <h2 className="t-h3 mb-1">Your group{groups.length > 1 ? 's' : ''}</h2>
-          <p className="t-body mb-4">
-            Tick every group you want to join, and take more than one slot in a group if you want multiple payout turns. Each slot runs separately with its own payout.
-          </p>
-          <div className="space-y-2.5">
-            {groups.map(g => {
-              const on = picked.has(g.id)
-              const spots = g.max_members - g.current_members
-              return (
-                <label key={g.id}
-                  className={`flex items-start gap-3 p-4 border rounded-xl cursor-pointer transition-colors ${
-                    on ? 'border-ink bg-bg' : 'border-line hover:border-ink/40'}`}>
-                  <input type="checkbox" checked={on} onChange={() => toggle(g.id)}
-                    className="mt-1 w-4 h-4 accent-ink shrink-0" />
-                  <span className="flex-1 min-w-0">
-                    <span className="flex items-baseline justify-between gap-3">
-                      <span className="text-[14.5px] font-semibold">{g.name}</span>
-                      <span className="text-[12px] text-ink-3 shrink-0">{spots} spot{spots === 1 ? '' : 's'} left</span>
-                    </span>
-                    <span className="block text-[13px] text-ink-2 mt-0.5 tnum">
-                      Pay GHS {ghs(g.contribution_amount)} daily · collect{' '}
-                      {g.cashout_amount == null ? 'ask us' : `GHS ${ghs(g.cashout_amount)}`} · registration GHS {ghs(g.registration_fee)}
-                    </span>
-                    {on && (
-                      <span className="flex items-center gap-2 mt-2.5 flex-wrap" onClick={e => e.preventDefault()}>
-                        {/*
-                          The label used to read "a half slot pays half the
-                          daily amount and collects half the cashout". That was
-                          true when half was a multiplication and is not true
-                          now: a group states what each place costs and pays,
-                          and a half need not be half of anything.
+        The route stays, because these links are already shared on WhatsApp and
+        a dead one is worse than a redirected one. What it does is show the
+        group honestly and hand the reader to the person who can actually place
+        them.
+      */}
+      <div className="mt-8 rounded-2xl border border-line bg-white p-6 sm:p-8">
+        <h2 className="t-h3">To join this group, message us</h2>
+        <p className="t-body mt-2 max-w-[520px]">
+          Places in a rotation are arranged personally, so we can check the
+          group still has room and that the daily amount suits you. Send us a
+          message and we will set you up and send your portal details.
+        </p>
+        <a href={waLink()} className="btn-dark mt-6 inline-flex">Message us on WhatsApp</a>
 
-                          Telling an applicant otherwise is a promise about
-                          their money made on the page where they commit it, so
-                          each option now carries the group's own figures. A
-                          group with none configured falls back to the three
-                          fractions, which is what the system does too.
-                        */}
-                        <span className="text-[12.5px] text-ink-2 w-full">
-                          Choose your place — each shows what you pay and what you collect:
-                        </span>
-                        {((portionsOf(g).length > 0
-                          ? portionsOf(g).map(p => ({
-                              f: Number(p.fraction), lbl: p.label,
-                              pay: Number(p.contribution_amount), get: Number(p.payout_amount),
-                            }))
-                          : [
-                              { f: 0.25, lbl: 'Quarter', pay: null as number | null, get: null as number | null },
-                              { f: 0.5,  lbl: 'Half',    pay: null as number | null, get: null as number | null },
-                              { f: 1,    lbl: 'Full',    pay: null as number | null, get: null as number | null },
-                            ]
-                        ) as { f: number; lbl: string; pay: number | null; get: number | null }[]
-                        ).map(({ f, lbl, pay, get }) => (
-                          <button key={f} type="button"
-                            onClick={e => { e.stopPropagation(); setFracFor(prev => ({ ...prev, [g.id]: f })) }}
-                            className={`px-3 py-2 rounded-lg text-left transition-colors ${
-                              fracOf(g.id) === f ? 'bg-ink text-white' : 'border border-line text-ink-2 hover:border-ink/40'}`}>
-                            <span className="block text-[13px] font-semibold">{lbl}</span>
-                            {pay !== null && (
-                              <span className={`block text-[11.5px] tnum mt-0.5 ${
-                                fracOf(g.id) === f ? 'text-white/70' : 'text-ink-3'}`}>
-                                GHS {ghs(pay)} · get GHS {ghs(get!)}
-                              </span>
-                            )}
-                          </button>
-                        ))}
-                        <span className="text-[12.5px] text-ink-2 w-full mt-1">How many slots?</span>
-                        {[1, 2, 3, 4, 5].map(n => (
-                          <button key={n} type="button"
-                            onClick={e => { e.stopPropagation(); setSlotsFor(prev => ({ ...prev, [g.id]: n })) }}
-                            disabled={g.current_members + n > g.max_members}
-                            className={`w-11 h-11 rounded-lg text-[14px] font-semibold transition-colors disabled:opacity-30 ${
-                              slotOf(g.id) === n ? 'bg-ink text-white' : 'border border-line text-ink-2 hover:border-ink/40'}`}>
-                            {n}
-                          </button>
-                        ))}
-                        <span className="text-[11.5px] text-ink-3 w-full">
-                          Each slot is its own plan — its own daily payment and its own payout turn.
-                        </span>
-                      </span>
-                    )}
-                  </span>
-                </label>
-              )
-            })}
-          </div>
-        </section>
-
-        <section>
-          <h2 className="t-h3 mb-4">Your details</h2>
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="sm:col-span-2">
-              <label className="in-lbl">Full name — exactly as on your Ghana Card</label>
-              <input className="in" required value={f.full_name} onChange={e => set('full_name', e.target.value)} />
-            </div>
-            <div>
-              <label className="in-lbl">Phone number</label>
-              <input className="in tnum" type="tel" required inputMode="tel"
-                value={f.phone} onChange={e => set('phone', e.target.value)} placeholder="024 000 0000" />
-            </div>
-            <div>
-              <label className="in-lbl">Date of birth</label>
-              <input className="in" type="date" required value={f.date_of_birth} onChange={e => set('date_of_birth', e.target.value)} />
-            </div>
-            <div>
-              <label className="in-lbl">Ghana Card number</label>
-              <input className="in" required value={f.ghana_card_number}
-                onChange={e => set('ghana_card_number', e.target.value)} placeholder="GHA-XXXXXXXXX-X" />
-            </div>
-            <div>
-              <label className="in-lbl">Occupation</label>
-              <input className="in" required value={f.occupation} onChange={e => set('occupation', e.target.value)} />
-            </div>
-            <div className="sm:col-span-2">
-              <label className="in-lbl">Residential address</label>
-              <input className="in" required value={f.residential_address} onChange={e => set('residential_address', e.target.value)} />
-            </div>
-            <div className="sm:col-span-2">
-              <label className="in-lbl">Email <span className="font-normal text-ink-3">— optional</span></label>
-              <input className="in" type="email" value={f.email} onChange={e => set('email', e.target.value)} />
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <h2 className="t-h3 mb-1">Mobile money</h2>
-          <p className="t-body mb-4">Where your cashout is sent on your day.</p>
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label className="in-lbl">Provider</label>
-              <select className="in" value={f.mobile_money_provider} onChange={e => set('mobile_money_provider', e.target.value)}>
-                <option value="MTN">MTN Mobile Money</option>
-                <option value="Telecel">Telecel Cash</option>
-                <option value="AirtelTigo">AirtelTigo Money</option>
-              </select>
-            </div>
-            <div>
-              <label className="in-lbl">Number</label>
-              <input className="in tnum" type="tel" required inputMode="tel"
-                value={f.mobile_money_number} onChange={e => set('mobile_money_number', e.target.value)} placeholder="024 000 0000" />
-            </div>
-          </div>
-        </section>
-
-        {/* Every rule ticked individually. A single blanket checkbox is how people
-            end up saying they never agreed to anything. */}
-        <section>
-          <div className="flex items-baseline justify-between gap-4 mb-1">
-            <h2 className="t-h3">The rules</h2>
-            <button type="button" onClick={() => setAgreed(new Array(RULES.length).fill(true))}
-              className="text-[12.5px] font-medium text-ink-2 hover:text-ink transition-colors">Tick all</button>
-          </div>
-          <p className="t-body mb-4">Tick each one. You are agreeing to each separately.</p>
-
-          <div className="divide-y divide-line border-y border-line">
-            {RULES.map(({ r, hard }, i) => (
-              <label key={r} className="flex gap-3 py-3.5 cursor-pointer">
-                <input type="checkbox" checked={agreed[i]}
-                  onChange={() => setAgreed(a => { const n = [...a]; n[i] = !n[i]; return n })}
-                  className="mt-1 w-4 h-4 accent-ink shrink-0" />
-                <span className="text-[14px] leading-relaxed">
-                  {r}{hard && <span className="text-red font-medium"> ·  strictly enforced</span>}
-                </span>
-              </label>
-            ))}
-          </div>
-        </section>
-
-        <div className="pt-2">
-          <button type="submit" disabled={busy || !allAgreed || chosen.length === 0} className="btn-dark w-full">
-            {busy ? 'Submitting…'
-              : chosen.length === 0 ? 'Tick at least one group to continue'
-              : !allAgreed ? 'Tick every rule to continue'
-              : totalReg > 0
-                ? `Apply for ${totalSlots} slot${totalSlots > 1 ? 's' : ''} and pay GHS ${ghs(totalReg)} registration`
-                : `Apply for ${totalSlots} slot${totalSlots > 1 ? 's' : ''}`}
-          </button>
-          {/* This used to read "The registration fee is not refunded. It is
-              returned to you inside your cashout on your day." — which
-              contradicts itself, and the second half was not true: the fee is
-              the operator's commission and has been excluded from every payout
-              since migration v7. */}
-          <p className="text-[12.5px] text-ink-3 mt-3 text-center leading-relaxed">
-            All payments are non-refundable. The registration fee is a one-time joining
-            charge — it is not a deposit and is not added to your cashout.
-          </p>
-        </div>
-      </form>
+        <p className="text-[13px] text-ink-2 mt-8 pt-6 border-t border-line leading-relaxed">
+          Looking to buy something and pay for it gradually instead?{' '}
+          <Link href="/shop" className="text-ink font-medium underline underline-offset-4">
+            Browse the products
+          </Link>{' '}
+          — that you can start yourself, right now.
+        </p>
+      </div>
     </div>
   )
 }

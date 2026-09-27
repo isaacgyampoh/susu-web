@@ -5,8 +5,9 @@ import { usePathname } from 'next/navigation'
 import { SITE } from '@/lib/site'
 
 const LINKS = [
+  { href: '/shop',   label: 'Products' },
   { href: '/#how',   label: 'How it works' },
-  { href: '/plans',  label: 'Groups' },
+  { href: '/plans',  label: 'Susu groups' },
   { href: '/rules',  label: 'Rules' },
 ]
 
@@ -38,7 +39,7 @@ export default function Nav() {
             the private link sent to them — the site never advertises where it
             is. See components/footer.tsx for the same reasoning. */}
         <div className="hidden md:flex items-center">
-          <Link href="/plans" className="btn-dark btn-sm">Join a group</Link>
+          <Link href="/shop" className="btn-dark btn-sm">Browse products</Link>
         </div>
 
         <button onClick={() => setOpen(!open)} aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open}
@@ -57,7 +58,7 @@ export default function Nav() {
             {LINKS.map(({ href, label }) => (
               <Link key={href} href={href} className="py-3 text-[15px] font-medium">{label}</Link>
             ))}
-            <Link href="/plans" className="btn-dark mt-3">Join a group</Link>
+            <Link href="/shop" className="btn-dark mt-3">Browse products</Link>
           </div>
         </div>
       )}

@@ -2,19 +2,25 @@ import Link from 'next/link'
 import { SITE, RULES, waLink } from '@/lib/site'
 import { getOpenGroups, isOpen } from '@/lib/groups'
 import GroupCard from '@/components/group-card'
+import ProductCard from '@/components/product-card'
+import { getCatalogue } from '@/lib/products'
 
+/* A real sequence, so the numbering earns its place: each step only happens
+   after the one before it. */
 const STEPS = [
-  { n: '01', t: 'Pick a group',     d: 'Each group has a daily amount, a size, and a cycle length. Pick the one that matches what you can genuinely pay every day.' },
-  { n: '02', t: 'Apply',            d: 'Send your details and your Ghana Card, and pay the registration fee.' },
-  { n: '03', t: 'Get your slot',    d: 'Once approved, the system assigns your position in the rotation. You are told your exact collection date up front.' },
-  { n: '04', t: 'Pay every day',    d: 'Pay through your portal before 6:00 PM. Every payment is recorded against your name the moment it lands.' },
-  { n: '05', t: 'Collect your day', d: 'On your date the whole pot is yours. Then you keep paying until every member has collected.' },
+  { n: '01', t: 'Choose a product',  d: 'Browse what is in stock and open the one you want. Every price is on the page, including what the plan costs in total.' },
+  { n: '02', t: 'Pick a payment plan', d: 'Each product has plans of different lengths. Pick the payment you can genuinely make — a longer plan means a smaller payment.' },
+  { n: '03', t: 'Open your account', d: 'Your name and phone number. You get a portal where your purchase and its payment dates are waiting.' },
+  { n: '04', t: 'Pay it down',       d: 'Pay from your phone whenever a payment is due. Every cedi is recorded against that purchase the moment it lands, and you can see the balance fall.' },
+  { n: '05', t: 'Collect it',        d: 'When the balance reaches zero the product is yours. We contact you to arrange collection.' },
 ]
 
 // Groups come from the console, so this page changes when you create one there.
 export const revalidate = 60
 
 export default async function Home() {
+  const { products } = await getCatalogue()
+  const featured = products.slice(0, 6)
   const groups = await getOpenGroups()
   const open   = groups.filter(isOpen)
   const closed = groups.filter(g => !isOpen(g))
@@ -53,23 +59,29 @@ export default async function Home() {
         <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/80 to-ink/20 sm:to-transparent" />
 
         <div className="wrap relative py-24 sm:py-32">
-          <p className="text-[13px] font-medium text-white/50 mb-6">Rotating savings · Ghana</p>
+          <p className="text-[13px] font-medium text-white/50 mb-6">Pay bit by bit · Ghana</p>
 
+          {/*
+            The headline changed with the business. It used to sell the susu,
+            because that was the only thing anyone could do here; the shop is
+            now the way in, and the rotations are something the owner places
+            people into herself.
+          */}
           <h1 className="t-hero text-white max-w-[760px]">
-            Save daily.
+            Get what you need.
             <br />
-            Collect on your day.
+            Pay bit by bit.
           </h1>
 
           <p className="t-lead !text-white/65 mt-6 max-w-[520px]">
-            Everyone in the group pays the same amount every day. One member collects
-            the whole pot on their turn — and everyone knows their date before the
-            first cedi is paid.
+            Fridges, televisions, blenders and more. Choose what you want, pick a
+            payment plan that fits what you earn, and pay it down over time. When
+            the last payment lands, it is yours.
           </p>
 
           <div className="flex flex-wrap gap-3 mt-9">
-            <Link href="#groups" className="btn bg-white text-ink hover:bg-white/90">
-              {open.length > 0 ? `See ${open.length} open ${open.length === 1 ? 'group' : 'groups'}` : 'See groups'}
+            <Link href="/shop" className="btn bg-white text-ink hover:bg-white/90">
+              Browse products
             </Link>
             <Link href="/#how" className="btn border border-white/25 text-white hover:bg-white/10">How it works</Link>
           </div>
@@ -77,13 +89,47 @@ export default async function Home() {
       </section>
 
       {/* The groups themselves — the product, live from the console */}
+      {/*
+        Products first. This is what the business now sells to people arriving
+        cold, and burying it under the rotations would be arranging the page
+        around the older business rather than the current one.
+      */}
+      {featured.length > 0 && (
+        <section id="shop" className="border-b border-line scroll-mt-16">
+          <div className="wrap py-16 sm:py-20">
+            <div className="flex flex-wrap items-baseline justify-between gap-4 mb-9">
+              <div>
+                <h2 className="t-h2">What you can buy</h2>
+                <p className="t-lead mt-3 max-w-[480px]">
+                  Pay over weeks or months. The full price and the plan total are
+                  on every product — nothing is added later.
+                </p>
+              </div>
+              <Link href="/shop" className="text-[14px] font-medium text-ink-2 hover:text-ink transition-colors">
+                All products →
+              </Link>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {featured.map(p => <ProductCard key={p.id} p={p} />)}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/*
+        The rotations stay, and stay honest: they are still running and still
+        the larger balance on the books. What changed is that joining one is a
+        conversation with the owner now, not a form — so this section shows
+        what is running and points at WhatsApp rather than at an application.
+      */}
       <section id="groups" className="border-b border-line scroll-mt-16">
         <div className="wrap py-16 sm:py-20">
           <div className="flex flex-wrap items-baseline justify-between gap-4 mb-9">
             <div>
-              <h2 className="t-h2">Open groups</h2>
+              <h2 className="t-h2">Susu groups</h2>
               <p className="t-lead mt-3 max-w-[480px]">
-                Pick what you can pay every single day — not what you hope to pay.
+                We still run daily rotations — everyone pays the same amount and
+                collects the whole pot on their day. Message us to join one.
               </p>
             </div>
             {open.length > 0 && (
