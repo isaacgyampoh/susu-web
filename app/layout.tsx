@@ -18,7 +18,7 @@ const url = 'https://www.abbiewealthsusu.com'
 export const metadata: Metadata = {
   metadataBase: new URL(url),
   title: {
-    default: 'Abbie Wealth Susu — Save daily, collect on your day',
+    default: 'Abbie Wealth — buy what you need, pay bit by bit',
     template: '%s · Abbie Wealth Susu',
   },
   description:
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
    */
   openGraph: {
     type: 'website', locale: 'en_GH', url, siteName: 'Abbie Wealth Susu',
-    title: 'Abbie Wealth Susu — Save daily, collect on your day',
+    title: 'Abbie Wealth — buy what you need, pay bit by bit',
     description: 'Contribute daily, collect the whole pot on your assigned day. Run on a proper ledger.',
     images: [{
       url: '/og.jpg', width: 1200, height: 630,
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Abbie Wealth Susu — Save daily, collect on your day',
+    title: 'Abbie Wealth — buy what you need, pay bit by bit',
     images: ['/og.jpg'],
   },
   robots: { index: true, follow: true },

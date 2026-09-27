@@ -3,7 +3,7 @@ export const SITE = {
   name:    'Abbie Wealth',
   full:    'Abbie Wealth Susu',
   domain:  'abbiewealthsusu.com',
-  tagline: 'Save daily. Collect on your day.',
+  tagline: 'Get what you need. Pay bit by bit.',
   // No portal URLs here, on purpose. This site takes applications and nothing
   // else — it must never advertise where the member portal or the console live.
   // Members receive their private link on WhatsApp when they are approved.
