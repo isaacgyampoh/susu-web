@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import CartLink from '@/components/cart-link'
 import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import { SITE } from '@/lib/site'
@@ -39,7 +40,8 @@ export default function Nav() {
             the private link sent to them — the site never advertises where it
             is. See components/footer.tsx for the same reasoning. */}
         <div className="hidden md:flex items-center">
-          <Link href="/shop" className="btn-dark btn-sm">Browse products</Link>
+          <CartLink className="text-[14px] font-medium text-ink-2 hover:text-ink transition-colors mr-4" />
+          <Link href="/shop" className="btn-dark btn-sm">Shop now</Link>
         </div>
 
         <button onClick={() => setOpen(!open)} aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open}
@@ -58,7 +60,8 @@ export default function Nav() {
             {LINKS.map(({ href, label }) => (
               <Link key={href} href={href} className="py-3 text-[15px] font-medium">{label}</Link>
             ))}
-            <Link href="/shop" className="btn-dark mt-3">Browse products</Link>
+            <CartLink className="py-3 text-[15px] font-medium" />
+            <Link href="/shop" className="btn-dark mt-3">Shop now</Link>
           </div>
         </div>
       )}

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getCatalogue, mediaUrl, ghs, planLine, type Plan } from '@/lib/products'
 import { waNumber } from '@/lib/site'
+import AddToCart from '@/components/add-to-cart'
 
 export async function generateMetadata(
   { params }: { params: { slug: string } },
@@ -104,6 +105,13 @@ export default async function ProductPage({ params }: { params: { slug: string }
             <span className="font-semibold">GHS {ghs(p.cash_price)}</span>
           </p>
 
+          {/* Buying outright is the straightforward path, so it comes first
+              and needs no explanation. Paying gradually is below, with the
+              terms, because it is the one that involves a conversation. */}
+          <div className="mt-4">
+            <AddToCart p={p} full />
+          </div>
+
           {!p.in_stock && (
             <p className="text-[13px] text-ink-2 mt-3 rounded-xl bg-tint px-3 py-2.5">
               This one is out of stock at the moment. Message us and we will let
@@ -112,9 +120,13 @@ export default async function ProductPage({ params }: { params: { slug: string }
           )}
 
           <section aria-labelledby="plans" className="mt-7">
-            <h2 id="plans" className="text-[13px] font-medium uppercase tracking-[.08em] text-ink-3 mb-3">
-              Payment plans
+            <h2 id="plans" className="text-[13px] font-medium uppercase tracking-[.08em] text-ink-3 mb-1">
+              Or pay gradually
             </h2>
+            <p className="text-[13px] text-ink-2 mb-3 leading-relaxed">
+              Send a request and we will call you to agree a deposit and the
+              dates. Nothing is owed until you have spoken to us.
+            </p>
 
             {p.plans.length === 0 ? (
               <p className="text-[14px] text-ink-2 leading-relaxed">
@@ -143,11 +155,10 @@ export default async function ProductPage({ params }: { params: { slug: string }
                       <p className="text-[12px] text-ink-3 mt-1.5 leading-relaxed">{pl.terms}</p>
                     )}
                     <Link
-                      href={`/shop/${p.slug}/start?plan=${pl.id}`}
-                      className="btn-dark btn-sm w-full mt-3 inline-flex justify-center"
-                      aria-disabled={!p.in_stock}
+                      href={`/shop/${p.slug}/request?plan=${pl.id}`}
+                      className="btn border border-line text-ink hover:bg-tint btn-sm w-full mt-3 inline-flex justify-center"
                     >
-                      Choose this plan
+                      Ask about this plan
                     </Link>
                   </li>
                 ))}

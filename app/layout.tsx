@@ -3,6 +3,7 @@ import { GeistSans } from 'geist/font/sans'
 import './globals.css'
 import Nav from '@/components/nav'
 import Footer from '@/components/footer'
+import { CartProvider } from '@/lib/cart'
 
 /*
  * The canonical host, and deliberately the www one.
@@ -62,9 +63,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en-GH" className={GeistSans.variable}>
       <body className="flex flex-col min-h-[100dvh]">
+        <CartProvider>
         <Nav />
         <main className="flex-1">{children}</main>
         <Footer />
+        </CartProvider>
       </body>
     </html>
   )

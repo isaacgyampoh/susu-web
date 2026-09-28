@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import AddToCart from '@/components/add-to-cart'
 import { mediaUrl, ghs, planLine, fromPrice, type Product } from '@/lib/products'
 
 /**
@@ -16,12 +17,14 @@ export default function ProductCard({ p }: { p: Product }) {
   const image = p.media.find(m => m.kind === 'image')
 
   return (
-    <Link
-      href={`/shop/${p.slug}`}
-      className="group block rounded-2xl border border-line bg-white overflow-hidden
-                 transition-shadow hover:shadow-md focus-visible:outline-none
-                 focus-visible:ring-2 focus-visible:ring-ink/30"
-    >
+    /* The card is not one big <Link> any more: a button nested inside an
+       anchor is invalid markup, and browsers resolve it by swallowing the
+       button's click. Link wraps the media and the words; the basket button
+       sits outside it. */
+    <div className="group rounded-2xl border border-line bg-white overflow-hidden
+                    transition-shadow hover:shadow-md flex flex-col">
+      <Link href={`/shop/${p.slug}`} className="block focus-visible:outline-none
+                                                focus-visible:ring-2 focus-visible:ring-ink/30">
       <div className="aspect-[4/3] bg-tint overflow-hidden">
         {image ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -71,6 +74,11 @@ export default function ProductCard({ p }: { p: Product }) {
           <p className="text-[12px] text-ink-3 mt-2">Out of stock — ask us when it is back</p>
         )}
       </div>
-    </Link>
+      </Link>
+
+      <div className="px-4 pb-4 mt-auto">
+        <AddToCart p={p} full />
+      </div>
+    </div>
   )
 }
