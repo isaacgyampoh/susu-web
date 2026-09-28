@@ -41,8 +41,33 @@ export async function generateMetadata(
  * live. This site shows and explains; it does not take payments.
  */
 export default async function ProductPage({ params }: { params: { slug: string } }) {
-  const { products } = await getCatalogue(params.slug)
+  const { products, unavailable } = await getCatalogue(params.slug)
   const p = products[0]
+
+  /*
+   * 404 means "this product does not exist". It must not be the answer to "we
+   * could not reach the catalogue just now" — that would tell a customer their
+   * fridge is gone, and tell search engines to drop a URL that is perfectly
+   * good, over a few seconds of network trouble.
+   */
+  if (!p && unavailable) {
+    return (
+      <main className="wrap py-20 max-w-[520px] text-center">
+        <h1 className="font-semibold text-[26px] tracking-[-.02em]">
+          We cannot load this product right now
+        </h1>
+        <p className="t-body mt-3">
+          This is usually brief. Try again in a moment, or message us and we
+          will tell you whether it is in stock.
+        </p>
+        <div className="flex flex-wrap gap-3 justify-center mt-6">
+          <Link href={`/shop/${params.slug}`} className="btn-dark">Try again</Link>
+          <a href={`https://wa.me/${waNumber()}`}
+             className="btn border border-line text-ink hover:bg-tint">Message us</a>
+        </div>
+      </main>
+    )
+  }
   if (!p) notFound()
 
   const images = p.media.filter(m => m.kind === 'image')

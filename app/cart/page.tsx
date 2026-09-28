@@ -65,8 +65,12 @@ export default function CartPage() {
                     +
                   </button>
                 </div>
+                {/* A real tap target, not just a word: it was 18px tall next
+                    to 40px quantity controls, which is the one on this row
+                    somebody hits by accident. */}
                 <button type="button" onClick={() => cart.remove(l.productId)}
-                  className="text-[13px] text-ink-3 hover:text-red underline underline-offset-2">
+                  className="min-h-[40px] px-1 text-[13px] text-ink-3 hover:text-red
+                             underline underline-offset-2">
                   Remove
                 </button>
               </div>

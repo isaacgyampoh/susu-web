@@ -15,8 +15,9 @@ export default function Footer() {
             <div>
               <p className="t-label mb-3">{SITE.name}</p>
               <div className="flex flex-col gap-2.5">
+                <Link href="/shop"  className="text-[14px] text-ink-2 hover:text-ink transition-colors">Products</Link>
                 <Link href="/#how"  className="text-[14px] text-ink-2 hover:text-ink transition-colors">How it works</Link>
-                <Link href="/plans" className="text-[14px] text-ink-2 hover:text-ink transition-colors">Open groups</Link>
+                <Link href="/plans" className="text-[14px] text-ink-2 hover:text-ink transition-colors">Susu groups</Link>
                 <Link href="/rules" className="text-[14px] text-ink-2 hover:text-ink transition-colors">Rules</Link>
               </div>
             </div>
@@ -32,7 +33,7 @@ export default function Footer() {
 
         <div className="mt-12 pt-6 border-t border-line flex flex-wrap gap-3 justify-between">
           <p className="text-[12.5px] text-ink-3">© {new Date().getFullYear()} {SITE.name}. All rights reserved.</p>
-          <p className="text-[12.5px] text-ink-3">Contributions close 6:00 PM daily. Late payments are flagged.</p>
+          <p className="text-[12.5px] text-ink-3">Prices include VAT where it applies. Payment plans are arranged with us directly.</p>
         </div>
       </div>
     </footer>

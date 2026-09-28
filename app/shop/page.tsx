@@ -21,7 +21,7 @@ export const metadata: Metadata = {
  * nothing here to personalise, so it renders once and is cached.
  */
 export default async function ShopPage() {
-  const { products, categories } = await getCatalogue()
+  const { products, categories, unavailable } = await getCatalogue()
 
   const used = categories.filter(c => products.some(p => p.category_slug === c.slug))
   const uncategorised = products.filter(p => !p.category_slug)
@@ -40,10 +40,15 @@ export default async function ShopPage() {
 
       {products.length === 0 ? (
         <div className="mt-12 rounded-2xl border border-line bg-white p-8 text-center">
-          <p className="font-semibold text-ink">Nothing listed just yet</p>
+          {/* An empty shop and an unreachable one are different facts, and the
+              second one is not the customer's fault to puzzle over. */}
+          <p className="font-semibold text-ink">
+            {unavailable ? 'We cannot load the products right now' : 'Nothing listed just yet'}
+          </p>
           <p className="text-[14px] text-ink-2 mt-1.5 leading-relaxed max-w-[420px] mx-auto">
-            We are putting the catalogue together. Message us on WhatsApp and we
-            will tell you what is available right now.
+            {unavailable
+              ? 'This is usually brief. Try again in a moment, or message us and we will tell you what is in stock.'
+              : 'We are putting the catalogue together. Message us on WhatsApp and we will tell you what is available right now.'}
           </p>
           <a href={`https://wa.me/${waNumber()}`} className="btn-dark btn-sm mt-5 inline-flex">
             Ask on WhatsApp

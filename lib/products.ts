@@ -43,13 +43,25 @@ export interface Product {
 
 export interface Category { id: string; name: string; slug: string; count: number }
 
-export interface Catalogue { categories: Category[]; products: Product[] }
+export interface Catalogue {
+  categories: Category[]
+  products: Product[]
+  /**
+   * True when the catalogue could not be reached at all.
+   *
+   * The difference matters: "no products" and "we could not ask" look the same
+   * in an empty array, and a page that treats the second as the first tells a
+   * customer their product does not exist — and tells Google the URL is gone —
+   * because of a few seconds of network trouble.
+   */
+  unavailable?: boolean
+}
 
 const MEDIA_BASE = `${URL}/storage/v1/object/public/product-media/`
 export const mediaUrl = (path: string) => MEDIA_BASE + path
 
 export async function getCatalogue(slug?: string): Promise<Catalogue> {
-  if (!URL || !ANON) return { categories: [], products: [] }
+  if (!URL || !ANON) return { categories: [], products: [], unavailable: true }
   try {
     const res = await fetch(
       `${URL}/functions/v1/shop-catalogue${slug ? `?slug=${encodeURIComponent(slug)}` : ''}`,
@@ -57,12 +69,12 @@ export async function getCatalogue(slug?: string): Promise<Catalogue> {
         headers: { apikey: ANON, Authorization: `Bearer ${ANON}` },
         next: { revalidate: 300 },
       })
-    if (!res.ok) return { categories: [], products: [] }
+    if (!res.ok) return { categories: [], products: [], unavailable: true }
     return (await res.json()) as Catalogue
   } catch {
     // A shop that 500s because the catalogue is briefly unreachable is worse
-    // than a shop that shows nothing and keeps its other pages working.
-    return { categories: [], products: [] }
+    // than one that says so and keeps its other pages working.
+    return { categories: [], products: [], unavailable: true }
   }
 }
 
